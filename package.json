@@ -1,5 +1,5 @@
 {
-  "name": "chat",
+  "name": "chat-nodejs-angularjs-socketio",
   "description": "Chat app",
   "version": "1.0.0",
   "private": true,
