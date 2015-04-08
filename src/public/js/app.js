@@ -1,27 +1,30 @@
-'use strict';
+(function (angular) {
+    'use strict';
 
-angular.module('Chat', [
-    'Chat.controllers',
-    'Chat.services',
-    'ngRoute',
-    'ui.bootstrap'
-])
+    angular.module('Chat', [
+        'Chat.controllers',
+        'Chat.services',
+        'ngRoute',
+        'ui.bootstrap'
+    ])
 
-.config(['$routeProvider', function ($routeProvider) {
-        $routeProvider
+        .config(['$routeProvider', function ($routeProvider) {
+            $routeProvider
 
-        .when('/', {
-            templateUrl: '/templates/index.html',
-            controller: 'IndexCtrl'
-        })
+                .when('/', {
+                    templateUrl: '/templates/index.html',
+                    controller: 'IndexCtrl'
+                })
 
-        .when('/channel', {
-            templateUrl: '/templates/channel.html',
-            controller: 'ChannelCtrl' +
-            ''
-        })
+                .when('/channel', {
+                    templateUrl: '/templates/channel.html',
+                    controller: 'ChannelCtrl' +
+                    ''
+                })
 
-        .otherwise({ redirectTo: '/' });
-    }])
+                .otherwise({redirectTo: '/'});
+        }])
 
-;
+    ;
+
+});
