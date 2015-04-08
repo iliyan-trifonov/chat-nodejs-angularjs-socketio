@@ -63,7 +63,7 @@ io.on('connection', function (socket) {
 
     socket.on('new message', function (message) {
         console.log('new message', message);
-        io.to(message.channel)('new message', message.text);
+        io.to(message.channel).emit('new message', message.text);
     });
 });
 

@@ -87,7 +87,9 @@
 
             socket.on('new message', function (message) {
                 console.log('new message', message);
-                $scope.text += message + "\n";
+                $scope.$apply(function () {
+                    $scope.text += message + "<br/>\n";
+                });
             });
 
             $scope.sendMessage = function () {
