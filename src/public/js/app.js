@@ -8,22 +8,26 @@
         'ui.bootstrap'
     ])
 
-        .config(['$routeProvider', function ($routeProvider) {
-            $routeProvider
+    .config(['$routeProvider', function ($routeProvider) {
+        $routeProvider
 
-                .when('/', {
-                    templateUrl: '/templates/index.html',
-                    controller: 'IndexCtrl'
-                })
+            .when('/', {
+                templateUrl: '/templates/index.html',
+                controller: 'IndexCtrl'
+            })
 
-                .when('/channel', {
-                    templateUrl: '/templates/channel.html',
-                    controller: 'ChannelCtrl' +
-                    ''
-                })
+            .when('/channel', {
+                templateUrl: '/templates/channel.html',
+                controller: 'ChannelCtrl'
+            })
 
-                .otherwise({redirectTo: '/'});
-        }])
+            .when('/chat', {
+                templateUrl: '/templates/chat.html',
+                controller: 'ChatCtrl'
+            })
+
+            .otherwise({redirectTo: '/'});
+    }])
 
     ;
 

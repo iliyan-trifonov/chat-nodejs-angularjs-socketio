@@ -10,8 +10,8 @@
     ])
 
     .controller('ChannelCtrl', [
-        '$scope', '$modal',
-        function ($scope, $modal) {
+        '$scope', '$modal', '$location', 'Channel',
+        function ($scope, $modal, $location, Channel) {
             $scope.createChannel = function () {
                 var popup = $modal.open({
                     templateUrl: 'createChannel.html',
@@ -21,6 +21,7 @@
 
                 popup.result.then(function (channelName) {
                     console.log('channel selected: ' + channelName);
+                    socket.emit('create channel', channelName);
                 }, function () {
                     console.log('Modal dismissed');
                 });
@@ -35,10 +36,17 @@
 
                 popup.result.then(function (channelName) {
                     console.log('channel selected: ' + channelName);
+                    socket.emit('join channel', channelName);
                 }, function () {
                     console.log('Modal dismissed');
                 });
             };
+
+            socket.on('joined channel', function (channel) {
+                console.log('joined channel', channel);
+                Channel.name.set(channel);
+                $location.path('/chat');
+            });
         }
     ])
 
@@ -64,6 +72,30 @@
 
             $scope.cancel = function () {
                 $modalInstance.dismiss('cancel');
+            };
+        }
+    ])
+
+    .controller('ChatCtrl', [
+        '$scope', 'Channel',
+        function ($scope, Channel) {
+            console.log('ChatCtrl started');
+
+            $scope.channel = Channel.name.get();
+
+            $scope.text = '';
+
+            socket.on('new message', function (message) {
+                console.log('new message', message);
+                $scope.text += message + "\n";
+            });
+
+            $scope.sendMessage = function () {
+                socket.emit('new message', {
+                    channel: $scope.channel,
+                    text: $scope.message
+                });
+                delete $scope.message;
             };
         }
     ])

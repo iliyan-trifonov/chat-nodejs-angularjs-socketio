@@ -5,3 +5,31 @@ body {
 
 /*ui bootstrap*/
 .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
+
+.chattext {
+    border: 1px solid black;
+    border-bottom: none;
+    height: 300px;
+}
+
+.chatusers {
+    border: 1px dashed black;
+    border-left: none;
+    border-bottom: none;
+    height: 300px;
+}
+
+.chatmessage {
+    border: 1px solid black;
+}
+
+.chatmessage input {
+    width: 100%;
+}
+
+.chatbutton {
+}
+
+.chatbutton button {
+    height: 26px;
+}

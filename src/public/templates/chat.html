@@ -1,18 +1,26 @@
 <div class="row">
-    <div class="col-md-12">
 
-        <div class="row">
-            <div class="col-md-10" ng-bind="text"></div>
-            <div class="col-md-2">
-                <span ng-repeat="user in users" ng-bind="user.name"></span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-10" ng-model="message"></div>
-            <div class="col-md-2">
-                <button class="btn btn-primary">Send</button>
-            </div>
-        </div>
-
+    <div class="page-header">
+        <h2>Channel #{{channel}}</h2>
     </div>
+
+    <div class="row">
+        <div class="col-md-10 chattext" ng-bind="text"></div>
+        <div class="col-md-2 chatusers">
+            <span ng-repeat="user in users" ng-bind="user.name"></span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-10 chatmessage">
+            <div class="row">
+                <input type="text" ng-model="message" />
+            </div>
+        </div>
+        <div class="col-md-2 chatbutton">
+            <div class="row">
+                <button class="btn btn-sm btn-block btn-primary" ng-click="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
 </div>

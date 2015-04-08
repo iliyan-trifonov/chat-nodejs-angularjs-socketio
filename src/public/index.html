@@ -57,6 +57,17 @@
 <script type="text/javascript" src="/socket.io/socket.io.js"></script>
 <script type="text/javascript">
     var socket = io();
+    socket.on('channel exists', function (channel) {
+        console.log('channel exists', channel);
+    });
+    socket.on('join channel err', function (err) {
+        console.log('join channel err', err);
+    });
+/*
+    socket.on('joined channel', function (channel) {
+        console.log('joined channel', channel);
+    });
+*/
 </script>
 
 <script type="text/javascript" src="/js/app.js"></script>
