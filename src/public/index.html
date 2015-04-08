@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-COMPATIBLE" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <meta name="description" content="Notepads App built with NodeJS, AngularJS, ExpressJS and MongoDB">
+    <meta name="description" content="Chat App built with NodeJS, AngularJS, ExpressJS and Socket.IO">
     <meta name="author" content="Iliyan Trifonov">
     <!--<link rel="icon" href="/favicon.ico">-->
     <title>Chat</title>
@@ -22,7 +22,7 @@
 <body ng-app="Chat">
 
 <nav class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container-fluid">
+    <div class="container">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed"
                     data-toggle="collapse" data-target="#navbar"
@@ -44,7 +44,7 @@
     </div>
 </nav>
 
-<div class="container" ng-controller="MainCtrl">
+<div class="container">
     <ng-view></ng-view>
 </div>
 
@@ -52,6 +52,8 @@
 <script type="text/javascript" src="/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="/vendor/angular/angular.min.js"></script>
 <script type="text/javascript" src="/vendor/angular-route/angular-route.min.js"></script>
+<script type="text/javascript" src="/vendor/angular-bootstrap/ui-bootstrap.min.js"></script>
+<script type="text/javascript" src="/vendor/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
 
 <script type="text/javascript" src="/js/app.js"></script>
 <script type="text/javascript" src="/js/controllers.js"></script>

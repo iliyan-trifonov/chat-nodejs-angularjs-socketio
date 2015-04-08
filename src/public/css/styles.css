@@ -1,0 +1,7 @@
+/*top nav*/
+body {
+    padding-top: 50px;
+}
+
+/*ui bootstrap*/
+.nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
