@@ -3,7 +3,8 @@
 var express = require('express'),
     app = express(),
     http = require('http').Server(app),
-    io = require('socket.io')(http);
+    io = require('socket.io')(http),
+    hat = require('hat');
 
 app.use(express.static(__dirname + '/public'));
 
@@ -18,12 +19,13 @@ http.listen(3000, function () {
 io.on('connection', function (socket) {
     console.log('a user connected');
     socket.on('disconnect', function(){
+        //TODO: send message to all channels that this client left
         console.log('user disconnected');
     });
 
     socket.on('create channel', function (channel) {
         console.log('creating channel', channel);
-        if (channels.indexOf(channel) !== -1) {
+        if (channels[channel]) {
             socket.emit('channel exists', channel);
             console.log('channel exists', channel);
             return false;
@@ -34,27 +36,34 @@ io.on('connection', function (socket) {
                 console.log('join channel err', err);
                 return false;
             }
-            channels.push(channel);
+            channels[channel] = {
+                name: channel,
+                password: null
+            };
             socket.emit('joined channel', channel);
             console.log('joined channel', channel);
         });
     });
 
-    socket.on('join channel', function (channel) {
+    socket.on('join channel', function (user, channel) {
         console.log('joining channel', channel);
-        socket.join(channel, function (err) {
+        //TODO: check here if channel is created and has a password, check the pass, emit error if needed
+        socket.join(channel.name, function (err) {
             if (err) {
                 console.log('join channel err', err);
                 socket.emit('join channel err', err);
             }
 
-            if (channels.indexOf(channel) === -1) {
+            if (!channels[channel.name]) {
                 console.log('adding channel to the array', channel);
-                channels.push(channel);
+                channels[channel.name] = {
+                    name: channel.name,
+                    password: null
+                };
             }
 
             socket.emit('joined channel', channel);
-            io.to(channel).emit('new message', 'a user joined the channel');
+            io.to(channel.name).emit('new message', 'a user joined the channel');
             //socket.broadcast('new message', 'a user joined the channel');
             console.log('joined channel', channel);
             console.log('sent message to channel', channel);
@@ -63,11 +72,29 @@ io.on('connection', function (socket) {
 
     socket.on('new message', function (message) {
         console.log('new message', message);
-        io.to(message.channel).emit('new message', message.text);
+        io.to(message.channel).emit(
+            'new message',
+            {
+                username: message.user.username,
+                text: message.text
+            }
+        );
     });
+
+    //TODO: genName(cb) for the username
+    socket.on('create user', function () {
+        var uuid = hat();
+        clients[uuid] = {
+            uuid: uuid,
+            username: 'Anonymous' + (Math.floor(Math.random() * 10000) + 1000)
+        };
+        socket.emit('user created', clients[uuid]);
+    });
+
+
 });
 
 /////////////////////////////////////////////////////
 
-var channels = [];
-var clients = [];
+var channels = {};
+var clients = {};
