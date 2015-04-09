@@ -5,7 +5,7 @@
     </div>
 
     <div class="row">
-        <div class="col-md-10 chattext" ng-bind="text"></div>
+        <div class="col-md-10 chattext" ng-bind-html="text"></div>
         <div class="col-md-2 chatusers">
             <span ng-repeat="user in users" ng-bind="user.name"></span>
         </div>

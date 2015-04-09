@@ -5,6 +5,7 @@
         'Chat.controllers',
         'Chat.services',
         'ngRoute',
+        'ngSanitize',
         'ui.bootstrap'
     ])
 
@@ -30,23 +31,30 @@
     }])
 
     .run([
-        '$window', 'Channel', '$location',
-        function ($window, Channel, $location) {
+        '$window', 'Channel', '$location', '$rootScope',
+        function ($window, Channel, $location, $rootScope) {
             //TODO: service for localStorage get/set
             var user = JSON.parse($window.localStorage.getItem('user'));
             var channel = JSON.parse($window.localStorage.getItem('channel'));
 
             function checkChannel() {
+                console.log('checking for stored channel name');
                 if (channel && channel.name) {
-                    console.log('found saved channel, joining it..', channel);
-                    socket.emit('join channel', user, channel);
-                    socket.on('joined channel', function (channel) {
-                        console.log('joined channel', channel);
+                    console.log('found saved channel', channel);
+                    if (Channel.joined()) {
+                        console.log('channel already joined', channel);
                         Channel.name.set(channel.name);
-                        console.log('channel name set', channel.name);
                         $location.path('/chat');
-                        console.log('location path changed');
-                    });
+                    } else {
+                        console.log('joining the saved channel', channel);
+                        socket.emit('join channel', user, channel);
+                        socket.on('joined channel', function (channel) {
+                            console.log('joined channel', channel);
+                            Channel.name.set(channel.name);
+                            Channel.join();
+                            $location.path('/chat');
+                        });
+                    }
                 } else {
                     console.log('no saved channel found');
                 }

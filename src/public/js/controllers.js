@@ -12,6 +12,9 @@
     .controller('ChannelCtrl', [
         '$scope', '$modal', '$location', 'Channel', '$window',
         function ($scope, $modal, $location, Channel, $window) {
+
+            var user = JSON.parse($window.localStorage.getItem('user'));
+
             //TODO: use 'resolve: {}' in modal to give a param that shows if we want to create or join
             $scope.createChannel = function () {
                 var popup = $modal.open({
@@ -40,10 +43,12 @@
 
                 popup.result.then(function (channelName) {
                     console.log('channel selected: ' + channelName);
-                    socket.emit('join channel', {
-                        name: channelName,
-                        password: null
-                    });
+                    var chan = {
+                        "name": channelName,
+                        "password": null
+                    };
+                    console.log('user, chan', user, chan);
+                    socket.emit('join channel', user, chan);
                 }, function () {
                     console.log('Modal dismissed');
                 });
@@ -52,11 +57,8 @@
             //repeats with the code in app.js:
             socket.on('joined channel', function (channel) {
                 console.log('joined channel', channel);
-                Channel.name.set(channel);
-                $window.localStorage.setItem('channel', JSON.stringify({
-                    name: channel,
-                    password: null
-                }));
+                Channel.name.set(channel.name);
+                $window.localStorage.setItem('channel', JSON.stringify(channel));
                 $location.path('/chat');
             });
         }
@@ -97,6 +99,13 @@
 
             //TODO: put it in a service/factory to keep the messages on page change
             $scope.text = '';
+
+            socket.on('new channel message', function (message) {
+                console.log('new message received', message);
+                $scope.$apply(function () {
+                    $scope.text += '<i>' + message.text + '</i><br/>\n';
+                });
+            });
 
             socket.on('new message', function (message) {
                 console.log('new message received', message);

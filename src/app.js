@@ -46,12 +46,18 @@ io.on('connection', function (socket) {
     });
 
     socket.on('join channel', function (user, channel) {
-        console.log('joining channel', channel);
+        console.log('joining channel', user, channel);
+        if (!channel) {
+            console.log('join channel err', channel);
+            socket.emit('join channel err', channel);
+            return false;
+        }
         //TODO: check here if channel is created and has a password, check the pass, emit error if needed
         socket.join(channel.name, function (err) {
             if (err) {
                 console.log('join channel err', err);
                 socket.emit('join channel err', err);
+                return false;
             }
 
             if (!channels[channel.name]) {
@@ -63,9 +69,13 @@ io.on('connection', function (socket) {
             }
 
             socket.emit('joined channel', channel);
-            io.to(channel.name).emit('new message', 'a user joined the channel');
-            //socket.broadcast('new message', 'a user joined the channel');
             console.log('joined channel', channel);
+            io.to(channel.name).emit(
+                'new channel message',
+                {
+                    text: 'User '+user.username+' joined the channel'
+                }
+            );
             console.log('sent message to channel', channel);
         });
     });
