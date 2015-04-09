@@ -34,8 +34,14 @@
         '$window', 'Channel', '$location', '$rootScope',
         function ($window, Channel, $location, $rootScope) {
             //TODO: service for localStorage get/set
-            var user = JSON.parse($window.localStorage.getItem('user'));
-            var channel = JSON.parse($window.localStorage.getItem('channel'));
+            var user = {};
+            if ($window.localStorage.getItem('user')) {
+                user = JSON.parse($window.localStorage.getItem('user'));
+            }
+            var channel = {};
+            if ($window.localStorage.getItem('channel')) {
+                channel = JSON.parse($window.localStorage.getItem('channel'));
+            }
 
             function checkChannel() {
                 console.log('checking for stored channel name');
@@ -68,7 +74,7 @@
                     console.log('new user created', newUser);
                     user = newUser;
                     $window.localStorage.setItem('user', JSON.stringify(user));
-                    $window.localStorage.setItem('channel', undefined);
+                    $window.localStorage.setItem('channel', JSON.stringify({}));
                     //checkChannel();
                 });
             } else {
