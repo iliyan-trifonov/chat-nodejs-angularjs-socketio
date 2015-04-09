@@ -47,12 +47,13 @@
                         $location.path('/chat');
                     } else {
                         console.log('joining the saved channel', channel);
+                        $location.path('/chat');
                         socket.emit('join channel', user, channel);
                         socket.on('joined channel', function (channel) {
                             console.log('joined channel', channel);
                             Channel.name.set(channel.name);
                             Channel.join();
-                            $location.path('/chat');
+                            $rootScope.$broadcast('channel joined', channel.name);
                         });
                     }
                 } else {

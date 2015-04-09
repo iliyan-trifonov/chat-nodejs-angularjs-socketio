@@ -37,6 +37,23 @@
                 },
                 joined: function () {
                     return joined;
+                },
+                getUsers: function(channel) {
+                    socket.emit('get channel users list', channel);
+                }
+            }
+        }
+    ])
+
+    .factory('Chat', [
+        function () {
+            var text = '';
+            return {
+                getText: function() {
+                    return text;
+                },
+                addText: function(newText) {
+                    text += newText + '<br />\n';
                 }
             }
         }

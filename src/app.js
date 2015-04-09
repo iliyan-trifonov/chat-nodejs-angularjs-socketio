@@ -64,12 +64,16 @@ io.on('connection', function (socket) {
                 console.log('adding channel to the array', channel);
                 channels[channel.name] = {
                     name: channel.name,
-                    password: null
+                    password: null,
+                    users: []
                 };
             }
 
+            channels[channel.name].users[user.uuid] = user;
+
             socket.emit('joined channel', channel);
             console.log('joined channel', channel);
+            console.log('sending message to channel', channel, 'from user', user.username);
             io.to(channel.name).emit(
                 'new channel message',
                 {
@@ -82,10 +86,11 @@ io.on('connection', function (socket) {
 
     socket.on('new message', function (message) {
         console.log('new message', message);
+        //TODO just emit if the user joined the channel or get the channel to send to from the user's socket
         io.to(message.channel).emit(
             'new message',
             {
-                username: message.user.username,
+                user: message.user,
                 text: message.text
             }
         );
@@ -101,6 +106,24 @@ io.on('connection', function (socket) {
         socket.emit('user created', clients[uuid]);
     });
 
+    socket.on('get channel users list', function (channel) {
+        console.log('get channel users list event received', channel);
+        if (!channel) {
+            console.log('invalid channel name', channel);
+            socket.emit('get channel users list error', 'invalid channel name');
+            return false;
+        }
+        var users = [];
+        console.log('current channels', channels);
+        for (var i in channels[channel].users) {
+            if (channels[channel].users.hasOwnProperty(i)) {
+                console.log('adding user', channels[channel].users[i].username);
+                users.push(channels[channel].users[i].username);
+            }
+        }
+        console.log('users list to send', users);
+        socket.emit('channel users list', users);
+    });
 
 });
 
