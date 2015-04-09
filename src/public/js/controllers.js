@@ -91,8 +91,8 @@
     ])
 
     .controller('ChatCtrl', [
-        '$scope', 'Channel', '$window', 'Chat',
-        function ($scope, Channel, $window, Chat) {
+        '$scope', 'Channel', '$window', 'Chat', '$location',
+        function ($scope, Channel, $window, Chat, $location) {
             console.log('ChatCtrl started');
 
             //probably empty at this moment - wait for the socket channel joined event
@@ -171,6 +171,23 @@
             function scrollChatText() {
                 chatContents.scrollTop(chatContents[0].scrollHeight);
             }
+
+            $scope.leaveChannel = function () {
+                socket.emit(
+                    'leave channel',
+                    { username: user.username },
+                    $scope.channel
+                );
+            };
+
+            socket.on('channel left', function (channel) {
+                console.log('channel left event received', channel);
+                Channel.name.set('');
+                $window.localStorage.setItem('channel', JSON.stringify({}));
+                $scope.$apply(function () {
+                    $location.path('/');
+                });
+            });
         }
     ])
 

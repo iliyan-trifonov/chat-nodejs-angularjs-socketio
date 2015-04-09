@@ -3,7 +3,9 @@
     <div class="page-header">
         <h2>
             Channel #{{channel}}
-            <button class="btn btn-sm btn-primary">Leave</button>
+            <button class="btn btn-sm btn-primary"
+                    ng-disabled="!channel"
+                    ng-click="leaveChannel()">Leave</button>
         </h2>
     </div>
 
@@ -21,9 +23,15 @@
 
     <div class="row">
         <div class="input-group">
-            <input type="text" class="form-control" ng-model="message" ng-keypress="messageKeyPressed($event)" />
+            <input type="text"
+                   class="form-control"
+                   ng-model="message"
+                   ng-disabled="!channel"
+                   ng-keypress="messageKeyPressed($event)" />
             <span class="input-group-btn">
-                <button class="btn btn-primary" ng-click="sendMessage()">Send</button>
+                <button class="btn btn-primary"
+                        ng-disabled="!channel"
+                        ng-click="sendMessage()">Send</button>
             </span>
         </div>
     </div>

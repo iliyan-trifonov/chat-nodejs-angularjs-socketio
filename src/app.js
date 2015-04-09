@@ -19,8 +19,22 @@ http.listen(3000, function () {
 io.on('connection', function (socket) {
     console.log('a user connected');
     socket.on('disconnect', function(){
-        //TODO: send message to all channels that this client left
         console.log('user disconnected');
+        for (var i in clients) {
+            if (clients.hasOwnProperty(i)) {
+                if (clients[i].socket.id === socket.id) {
+                    clients[i].channels.forEach(function (channel) {
+                        io.to(channel).emit(
+                            'new channel message',
+                            {
+                                text: 'User ' + clients[i].username + ' left the channel'
+                            }
+                        );
+                    });
+                    return;
+                }
+            }
+        }
     });
 
     socket.on('create channel', function (channel) {
@@ -71,6 +85,10 @@ io.on('connection', function (socket) {
 
             channels[channel.name].users[user.uuid] = user;
 
+            console.log('uuid', user.uuid, 'clients', clients);
+
+            clients[user.uuid].channels.push(channel.name);
+
             socket.emit('joined channel', channel);
             console.log('joined channel', channel);
             console.log('sending message to channel', channel, 'from user', user.username);
@@ -101,9 +119,23 @@ io.on('connection', function (socket) {
         var uuid = hat();
         clients[uuid] = {
             uuid: uuid,
-            username: 'Anonymous' + (Math.floor(Math.random() * 10000) + 1000)
+            username: 'Anonymous' + (Math.floor(Math.random() * 10000) + 1000),
+            channels: []/*,
+            socket: socket*/
         };
+        console.log('created new user', clients[uuid]);
         socket.emit('user created', clients[uuid]);
+        clients[uuid].socket = socket;
+    });
+
+    socket.on('known user', function (user) {
+        clients[user.uuid] = {
+            uuid: user.uuid,
+            username: user.username,
+            channels: [],
+            socket: socket
+        };
+        //socket.emit('known user ready', clients[uuid]);
     });
 
     socket.on('get channel users list', function (channel) {
@@ -123,6 +155,28 @@ io.on('connection', function (socket) {
         }
         console.log('users list to send', users);
         socket.emit('channel users list', users);
+    });
+
+    socket.on('leave channel', function (user, channel) {
+        console.log('leave channel message received', user, channel);
+        socket.leave(channel, function (err) {
+            if (err) {
+                console.log('leave channel err', err);
+                socket.emit('leave channel err', err);
+                return false;
+            }
+
+            console.log('channel left', channel);
+
+            socket.emit('channel left', channel);
+
+            io.to(channel).emit(
+                'new channel message',
+                {
+                    text: 'User '+user.username+' left the channel'
+                }
+            );
+        });
     });
 
 });

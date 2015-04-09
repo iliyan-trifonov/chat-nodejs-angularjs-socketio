@@ -68,11 +68,13 @@
                     console.log('new user created', newUser);
                     user = newUser;
                     $window.localStorage.setItem('user', JSON.stringify(user));
-                    checkChannel();
+                    $window.localStorage.setItem('channel', undefined);
+                    //checkChannel();
                 });
             } else {
                 console.log('saved user found', user);
                 //TODO check if uuid exists and create new if not
+                socket.emit('known user', user);
                 checkChannel();
             }
         }
