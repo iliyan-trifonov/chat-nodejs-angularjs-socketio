@@ -31,58 +31,64 @@
     }])
 
     .run([
-        '$window', 'Channel', '$location', '$rootScope',
-        function ($window, Channel, $location, $rootScope) {
-            //TODO: service for localStorage get/set
-            var user = {};
-            if ($window.localStorage.getItem('user')) {
-                user = JSON.parse($window.localStorage.getItem('user'));
-            }
-            var channel = {};
-            if ($window.localStorage.getItem('channel')) {
-                channel = JSON.parse($window.localStorage.getItem('channel'));
-            }
+        'Channel', '$location', '$rootScope', 'Storage',
+        function (Channel, $location, $rootScope, Storage) {
 
-            function checkChannel() {
-                console.log('checking for stored channel name');
+            var user = Storage.user.get();
+            var channel = Storage.channel.get();
+
+            //TODO: use MenuCtrl surrounding the top menu only, no rootScope
+            $rootScope.Channel = Channel;
+            $rootScope.user = user.username;
+
+            if (!user || !user.uuid) {
+                Storage.user.set({});
+                Storage.channel.set({});
+                socket.emit('create user');
+            } else {
+                socket.emit('known user', user);
                 if (channel && channel.name) {
-                    console.log('found saved channel', channel);
-                    if (Channel.joined()) {
-                        console.log('channel already joined', channel);
-                        Channel.name.set(channel.name);
-                        $location.path('/chat');
-                    } else {
-                        console.log('joining the saved channel', channel);
-                        $location.path('/chat');
-                        socket.emit('join channel', user, channel);
-                        socket.on('joined channel', function (channel) {
-                            console.log('joined channel', channel);
-                            Channel.name.set(channel.name);
-                            Channel.join();
-                            $rootScope.$broadcast('channel joined', channel.name);
-                        });
-                    }
-                } else {
-                    console.log('no saved channel found');
+                    $location.path('/chat');
+                    socket.emit('join channel', user, channel);
                 }
             }
 
-            if (!user || !user.uuid) {
-                console.log('user not found, creating..');
-                socket.emit('create user');
-                socket.on('user created', function (newUser) {
-                    console.log('new user created', newUser);
-                    user = newUser;
-                    $window.localStorage.setItem('user', JSON.stringify(user));
-                    $window.localStorage.setItem('channel', JSON.stringify({}));
-                    //checkChannel();
-                });
-            } else {
-                console.log('saved user found', user);
-                //TODO check if uuid exists and create new if not
-                socket.emit('known user', user);
-                checkChannel();
-            }
+            ///socket messages
+
+            socket.on('joined channel', function (channel) {
+                console.log('socket:joined channel', channel);
+                $rootScope.$broadcast('joined channel', channel);
+            });
+
+            socket.on('user created', function (newUser) {
+                console.log('socket:user created', newUser);
+                user = newUser;
+                Storage.user.set(user);
+                Storage.channel.set({});
+            });
+
+            socket.on('channel users list', function (users) {
+                console.log('socket:channel users list', users);
+                $rootScope.$broadcast('channel users list', users);
+            });
+
+            //TODO: combine channel and user messages with a flag: message.channel = true/false
+            socket.on('new channel message', function (message) {
+                console.log('socket:new channel message', message);
+                $rootScope.$broadcast('new channel message', message);
+            });
+
+            socket.on('new message', function (message) {
+                console.log('socket:new message', message);
+                $rootScope.$broadcast('new message', message);
+            });
+
+            //TODO: rename it to left channel
+            socket.on('channel left', function (channel) {
+                console.log('socket:channel left', channel);
+                $rootScope.$broadcast('channel left', channel);
+            });
+
         }
     ])
 

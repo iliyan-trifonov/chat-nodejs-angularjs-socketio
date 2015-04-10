@@ -133,7 +133,7 @@ io.on('connection', function (socket) {
             uuid: user.uuid,
             username: user.username,
             channels: [],
-            socket: socket
+            socket: { id: socket.id }
         };
         //socket.emit('known user ready', clients[uuid]);
     });

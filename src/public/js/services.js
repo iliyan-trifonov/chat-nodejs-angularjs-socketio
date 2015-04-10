@@ -7,10 +7,10 @@
         function () {
             return {
                 'channel': {
-                    'create': function (channelName) {
+                    'create': function (channel) {
 
                     },
-                    'join': function (channelName) {
+                    'join': function (channel) {
 
                     }
                 }
@@ -21,7 +21,6 @@
     .factory('Channel', [
         function () {
             var name = '';
-            var joined = false;
             return {
                 name: {
                     get: function() {
@@ -31,12 +30,6 @@
                         console.log('Channel: setting new name', newName);
                         name = newName;
                     }
-                },
-                join: function () {
-                    joined = true;
-                },
-                joined: function () {
-                    return joined;
                 },
                 getUsers: function(channel) {
                     socket.emit('get channel users list', channel);
@@ -54,6 +47,38 @@
                 },
                 addText: function(newText) {
                     text += newText + '<br />\n';
+                }
+            }
+        }
+    ])
+
+    .service('Storage', [
+        '$window',
+        function ($window) {
+            return {
+                user: {
+                    get: function () {
+                        var user = {};
+                        if ($window.localStorage.getItem('user')) {
+                            user = JSON.parse($window.localStorage.getItem('user'));
+                        }
+                        return user;
+                    },
+                    set: function (user) {
+                        $window.localStorage.setItem('user', JSON.stringify(user));
+                    }
+                },
+                channel: {
+                    get: function () {
+                        var channel = {};
+                        if ($window.localStorage.getItem('channel')) {
+                            channel = JSON.parse($window.localStorage.getItem('channel'));
+                        }
+                        return channel;
+                    },
+                    set: function (channel) {
+                        $window.localStorage.setItem('channel', JSON.stringify(channel));
+                    }
                 }
             }
         }
