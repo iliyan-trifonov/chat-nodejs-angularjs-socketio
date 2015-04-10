@@ -17,6 +17,11 @@
                 controller: 'IndexCtrl'
             })
 
+            .when('/profile', {
+                templateUrl: '/templates/profile.html',
+                controller: 'ProfileCtrl'
+            })
+
             .when('/channel', {
                 templateUrl: '/templates/channel.html',
                 controller: 'ChannelCtrl'
@@ -31,8 +36,8 @@
     }])
 
     .run([
-        'Channel', '$location', '$rootScope', 'Storage',
-        function (Channel, $location, $rootScope, Storage) {
+        'Channel', '$location', '$rootScope', 'Storage', 'Chat',
+        function (Channel, $location, $rootScope, Storage, Chat) {
 
             var user = Storage.user.get();
             var channel = Storage.channel.get();
@@ -75,11 +80,13 @@
             //TODO: combine channel and user messages with a flag: message.channel = true/false
             socket.on('new channel message', function (message) {
                 console.log('socket:new channel message', message);
+                Chat.addText(message.text);
                 $rootScope.$broadcast('new channel message', message);
             });
 
             socket.on('new message', function (message) {
                 console.log('socket:new message', message);
+                Chat.addText(message.text);
                 $rootScope.$broadcast('new message', message);
             });
 
@@ -87,6 +94,11 @@
             socket.on('channel left', function (channel) {
                 console.log('socket:channel left', channel);
                 $rootScope.$broadcast('channel left', channel);
+            });
+
+            socket.on('user updated', function (uuid, oldUsername, newUsername) {
+                console.log('socket:user updated', uuid, oldUsername, newUsername);
+                $rootScope.$broadcast('user updated', uuid, oldUsername, newUsername);
             });
 
         }

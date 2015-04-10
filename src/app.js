@@ -83,7 +83,8 @@ io.on('connection', function (socket) {
                 };
             }
 
-            channels[channel.name].users[user.uuid] = user;
+            //make a reference
+            channels[channel.name].users[user.uuid] = clients[user.uuid];
 
             console.log('uuid', user.uuid, 'clients', clients);
 
@@ -120,12 +121,11 @@ io.on('connection', function (socket) {
         clients[uuid] = {
             uuid: uuid,
             username: 'Anonymous' + (Math.floor(Math.random() * 10000) + 1000),
-            channels: []/*,
-            socket: socket*/
+            channels: [],
+            socket: { id: socket.id }
         };
         console.log('created new user', clients[uuid]);
         socket.emit('user created', clients[uuid]);
-        clients[uuid].socket = socket;
     });
 
     socket.on('known user', function (user) {
@@ -177,6 +177,32 @@ io.on('connection', function (socket) {
                 }
             );
         });
+    });
+
+    socket.on('update user', function (uuid, newUsername) {
+        console.log('update user message', uuid, newUsername);
+        var oldUsername = clients[uuid].username;
+        clients[uuid].username = newUsername;
+/*
+        for (var i in channels) {
+            if (channels.hasOwnProperty(i)) {
+                if (channels[i].users[uuid]) {
+                    channels[i].users[uuid].username = newUsername;
+                }
+            }
+        }
+*/
+        socket.emit('user updated', uuid, oldUsername, newUsername);
+        for (var i in clients[uuid].channels) {
+            if (clients[uuid].channels.hasOwnProperty(i)) {
+                io.to(clients[uuid].channels[i]).emit(
+                    'new channel message',
+                    {
+                        text: 'User ' + oldUsername + ' renamed to ' + newUsername
+                    }
+                );
+            }
+        }
     });
 
 });
