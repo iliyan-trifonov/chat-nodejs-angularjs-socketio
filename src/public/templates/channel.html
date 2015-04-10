@@ -13,6 +13,7 @@
                     <span class="input-group-addon">#</span>
                     <input type="text"
                            id="name"
+                           autocomplete="off"
                            class="form-control"
                            placeholder="Channel Name"
                            ng-model="channel.name" />
@@ -23,7 +24,7 @@
             <div class="form-group">
                 <label for="password">Channel Password</label>
                 <small>Leave blank for a public channel</small>
-                <input type="text"
+                <input type="password"
                         id="password"
                         class="form-control"
                         placeholder="Channel Password"

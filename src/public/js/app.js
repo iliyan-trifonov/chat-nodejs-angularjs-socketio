@@ -36,8 +36,8 @@
     }])
 
     .run([
-        'Channel', '$location', '$rootScope', 'Storage', 'Chat',
-        function (Channel, $location, $rootScope, Storage, Chat) {
+        'Channel', '$location', '$rootScope', 'Storage', 'Chat', '$log',
+        function (Channel, $location, $rootScope, Storage, Chat, $log) {
 
             var user = Storage.user.get();
             var channel = Storage.channel.get();
@@ -60,45 +60,56 @@
 
             ///socket messages
 
+            //TODO: socket error messages to handle
+
             socket.on('joined channel', function (channel) {
-                console.log('socket:joined channel', channel);
-                $rootScope.$broadcast('joined channel', channel);
+                $log.info('socket:joined channel', channel);
+                $rootScope.$apply(function () {
+                    $rootScope.$broadcast('joined channel', channel);
+                });
             });
 
             socket.on('user created', function (newUser) {
-                console.log('socket:user created', newUser);
+                $log.info('socket:user created', newUser);
                 user = newUser;
                 Storage.user.set(user);
                 Storage.channel.set({});
             });
 
             socket.on('channel users list', function (users) {
-                console.log('socket:channel users list', users);
+                $log.info('socket:channel users list', users);
                 $rootScope.$broadcast('channel users list', users);
             });
 
             //TODO: combine channel and user messages with a flag: message.channel = true/false
             socket.on('new channel message', function (message) {
-                console.log('socket:new channel message', message);
+                $log.info('socket:new channel message'/*, message*/);
                 Chat.addText(message.text);
                 $rootScope.$broadcast('new channel message', message);
             });
 
             socket.on('new message', function (message) {
-                console.log('socket:new message', message);
+                $log.info('socket:new message'/*, message*/);
                 Chat.addText(message.text);
                 $rootScope.$broadcast('new message', message);
             });
 
             //TODO: rename it to left channel
             socket.on('channel left', function (channel) {
-                console.log('socket:channel left', channel);
+                $log.info('socket:channel left', channel);
                 $rootScope.$broadcast('channel left', channel);
             });
 
             socket.on('user updated', function (uuid, oldUsername, newUsername) {
-                console.log('socket:user updated', uuid, oldUsername, newUsername);
-                $rootScope.$broadcast('user updated', uuid, oldUsername, newUsername);
+                $log.info('socket:user updated', uuid, oldUsername, newUsername);
+                $rootScope.$apply(function () {
+                    $rootScope.$broadcast('user updated', uuid, oldUsername, newUsername);
+                });
+            });
+
+            socket.on('channel messages', function (messages) {
+                $log.info('socket:channel messages', 'len = ' + messages.length);
+                $rootScope.$broadcast('channel messages', messages);
             });
 
         }

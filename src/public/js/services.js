@@ -20,6 +20,9 @@
                     },
                     'join': function (channel) {
 
+                    },
+                    'getMessages': function (channel) {
+                        socket.emit('get messages', channel);
                     }
                 }
             };
@@ -35,7 +38,7 @@
                         return name;
                     },
                     set: function(newName) {
-                        console.log('Channel: setting new name', newName);
+                        //$log.info('Channel: setting new name', newName);
                         name = newName;
                     }
                 },
@@ -48,14 +51,17 @@
 
     .factory('Chat', [
         function () {
-            var text = '';
+            var text = [];
             return {
                 getText: function() {
-                    console.log('Chat.getText() called', text);
-                    return text;
+                    return text.join('<br/>');
                 },
                 addText: function(newText) {
-                    text += newText + '<br />\n';
+                    text.push(newText);
+                },
+                replaceText: function (newText) {
+                    //$log.info('Chat.replaceText() called', newText);
+                    text = newText;
                 }
             }
         }
@@ -71,11 +77,11 @@
                         if ($window.localStorage.getItem('user')) {
                             user = JSON.parse($window.localStorage.getItem('user'));
                         }
-                        console.log('Storage: get user', user);
+                        //$log.info('Storage: get user', user);
                         return user;
                     },
                     set: function (user) {
-                        console.log('Storage: setting new user', user);
+                        //$log.info('Storage: setting new user', user);
                         $window.localStorage.setItem('user', JSON.stringify(user));
                     }
                 },

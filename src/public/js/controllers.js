@@ -45,47 +45,21 @@
             $scope.$on('joined channel', function (event, channel) {
                 Channel.name.set(channel.name);
                 Storage.channel.set(channel);
-                $scope.$apply(function () {
+                //$scope.$apply(function () {
                     $location.path('/chat');
-                });
+                //});
             });
         }
     ])
 
-    .controller('CreateChannelCtrl', [
-        '$scope', '$modalInstance',
-        function ($scope, $modalInstance) {
-            $scope.ok = function () {
-                $modalInstance.close($scope.channel);
-            };
-
-            $scope.cancel = function () {
-                $modalInstance.dismiss('cancel');
-            };
-        }
-    ])
-
-    .controller('JoinChannelCtrl', [
-        '$scope', '$modalInstance',
-        function ($scope, $modalInstance) {
-            $scope.ok = function () {
-                $modalInstance.close($scope.channel);
-            };
-
-            $scope.cancel = function () {
-                $modalInstance.dismiss('cancel');
-            };
-        }
-    ])
-
     .controller('ChatCtrl', [
-        /*'$scope', 'Channel', 'Chat', '$location', 'Storage',*/
-        function (/*$scope, Channel, Chat, $location, Storage*/) {
-
-            /*console.log('ChatCtrl started');
+        '$scope', 'Channel', 'Chat', '$location', 'Storage', 'ChatSocket',
+        function ($scope, Channel, Chat, $location, Storage, ChatSocket) {
 
             var user = Storage.user.get();
-            var chatContents = angular.element(document.querySelector('.chat_contents'));
+            var chatContents = angular.element(
+                document.querySelector('.chat_contents')
+            );
 
             $scope.channel = Channel.name.get();
 
@@ -95,10 +69,16 @@
                 Channel.getUsers($scope.channel);
             }
 
-            $scope.text = Chat.getText();
-            setTimeout(function () {
-                scrollChatText();
-            });
+            /*$scope.text = Chat.getText();
+            if ($scope.text.length > 0) {
+                setTimeout(function () {
+                    scrollChatText();
+                });
+            } else {*/
+                if ($scope.channel) {
+                    ChatSocket.channel.getMessages($scope.channel);
+                }
+            /*}*/
 
             $scope.sendMessage = function () {
                 socket.emit('new message', {
@@ -126,56 +106,68 @@
                     { username: user.username },
                     $scope.channel
                 );
-            };*/
+            };
 
             ///socket messages
 
-            /*$scope.$on('joined channel', function (event, channel) {
-                $scope.$apply(function () {
+            $scope.$on('joined channel', function (event, channel) {
+                //$scope.$apply(function () {
                     $scope.channel = channel.name;
-                });
+                //});
                 Channel.name.set(channel.name);
                 Channel.getUsers($scope.channel);
-            });*/
+                ChatSocket.channel.getMessages($scope.channel);
+                angular.element(
+                    document.querySelector('#messageinput')
+                ).focus();
+            });
 
-            /*$scope.$on('channel users list', function (event, users) {
+            $scope.$on('channel users list', function (event, users) {
                 //TODO: check if this needs $apply()
                 $scope.$apply(function () {
                     $scope.users = users;
                 });
-            });*/
+            });
 
             //TODO: directive for html adding - dom manipulation
             //TODO: use the same body for user and channel message with
             //TODO: one flag: message.channel = true/false
-            /*$scope.$on('new channel message', function (event, message) {
+            $scope.$on('new channel message', function (event, message) {
                 //TODO: check if $apply() is needed here
                 $scope.$apply(function () {
-                    //TODO: use message.date - date added on the server
-                    $scope.text += new Date()  +' <i>' + message.text + '</i><br/>\n';
+                    $scope.text = Chat.getText();
                 });
                 scrollChatText();
-            });*/
+            });
 
             //TODO: directive for html adding
-            /*$scope.$on('new message', function (event, message) {
+            $scope.$on('new message', function (event, message) {
                 //TODO: check if $apply() is needed here
                 $scope.$apply(function () {
-                    $scope.text += new Date() + ' <strong>' + message.user + ':</strong> ' +
-                    message.text + "<br/>\n";
+                    $scope.text = Chat.getText();
                 });
                 scrollChatText();
-            });*/
+            });
 
             //TODO: rename to left channel
-            /*$scope.$on('channel left', function (event, channel) {
+            $scope.$on('channel left', function (event, channel) {
                 Channel.name.set('');
                 Storage.channel.set({});
                 //TODO: check if $apply() is needed here
                 $scope.$apply(function () {
                     $location.path('/');
                 });
-            });*/
+            });
+
+            $scope.$on('channel messages', function (event, messages) {
+                Chat.replaceText(messages);
+                $scope.$apply(function () {
+                    $scope.text = Chat.getText();
+                    setTimeout(function () {
+                        scrollChatText();
+                    });
+                });
+            });
 
         }
     ])
@@ -189,18 +181,17 @@
             $scope.username = user.username;
 
             $scope.updateUsername = function () {
-                console.log('updateUsername() called');
+                //$log.info('updateUsername() called');
                 ChatSocket.user.update(user.uuid, $scope.username);
             };
 
             $scope.$on('user updated', function (event, uuid, oldUsername, newUsername) {
-                /*console.log('ProfileCtrl: user updated received', uuid, oldUsername, newUsername);
                 user.username = newUsername;
-                Storage.user.set(user);*/
+                Storage.user.set(user);
                 if (Storage.channel.get().name) {
-                    $scope.$apply(function () {
+                    //$scope.$apply(function () {
                         $location.path('/chat');
-                    });
+                    //});
                 }
             });
         }
