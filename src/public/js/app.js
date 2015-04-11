@@ -113,6 +113,11 @@
                 $rootScope.$broadcast('channel messages', messages);
             });
 
+            socket.on('error', function (error) {
+                $log.info('socket:error', error);
+                $rootScope.$broadcast('error', error);
+            });
+
         }
     ])
 
