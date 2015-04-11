@@ -22,20 +22,21 @@
     </div>
 
     <div class="row">
-        <div smilies="message"></div>
-        <div class="input-group">
-            <input id="messageinput"
-                   type="text"
-                   class="form-control"
-                   autofocus
-                   ng-model="message"
-                   ng-disabled="!channel"
-                   ng-keypress="messageKeyPressed($event)" />
-            <span class="input-group-btn">
-                <button class="btn btn-primary"
-                        ng-disabled="!channel"
-                        ng-click="sendMessage()">Send</button>
-            </span>
+        <div class="col-md-12">
+            <div class="input-group">
+                <input id="messageinput"
+                       type="text"
+                       class="form-control"
+                       autofocus
+                       ng-model="message"
+                       ng-disabled="!channel"
+                       ng-keypress="messageKeyPressed($event)" />
+                <span class="input-group-btn">
+                    <button class="btn btn-primary"
+                            ng-disabled="!channel"
+                            ng-click="sendMessage()">Send</button>
+                </span>
+            </div>
         </div>
     </div>
 
