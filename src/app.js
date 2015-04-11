@@ -31,7 +31,16 @@ io.on('connection', function (socket) {
                             message
                         );
                         addMessage(channel, message.text);
+
+                        for (var j in channels[channel].users) {
+                            if (channels[channel].users.hasOwnProperty(j)) {
+                                if (channels[channel].users[j].uuid === clients[i].uuid) {
+                                    delete channels[channel].users[j];
+                                }
+                            }
+                        }
                     });
+                    delete clients[i];
                     return;
                 }
             }
@@ -177,6 +186,14 @@ io.on('connection', function (socket) {
                 message
             );
             addMessage(channel, message.text);
+
+            for (var i in channels[channel].users) {
+                if (channels[channel].users.hasOwnProperty(i)) {
+                    if (channels[channel].users[i].uuid === user.uuid) {
+                        delete channels[channel].users[i];
+                    }
+                }
+            }
         });
     });
 

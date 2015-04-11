@@ -17,7 +17,7 @@
         </div>
         <div class="col-md-2 chatusers text-center">
             <span ng-if="users"><strong>Users:</strong></span><br/>
-            <span ng-repeat="user in users">{{user}}<br /></span>
+            <span ng-repeat="user in users | orderBy: 'user'">{{user}}<br /></span>
         </div>
     </div>
 
