@@ -165,9 +165,9 @@
                 Channel.name.set('');
                 Storage.channel.set({});
                 //TODO: check if $apply() is needed here
-                $scope.$apply(function () {
+                //$scope.$apply(function () {
                     $location.path('/');
-                });
+                //});
             });
 
             $scope.$on('channel messages', function (event, messages) {

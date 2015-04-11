@@ -96,7 +96,9 @@
             //TODO: rename it to left channel
             socket.on('channel left', function (channel) {
                 $log.info('socket:channel left', channel);
-                $rootScope.$broadcast('channel left', channel);
+                $rootScope.$apply(function () {
+                    $rootScope.$broadcast('channel left', channel);
+                });
             });
 
             socket.on('user updated', function (uuid, oldUsername, newUsername) {
