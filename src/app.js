@@ -154,8 +154,7 @@ io.on('connection', function (socket) {
         socket.emit('user updated', uuid, oldUsername, newUsername);
         var channels = getUserChannels(uuid);
         channels.forEach(function (channel) {
-            var message = formatChannelMessage(oldUsername + ' renamed to ' + newUsername);
-            sendMessageToChannel(channel, message);
+            sendMessageToChannel(channel, oldUsername + ' renamed to ' + newUsername);
         });
     });
 
