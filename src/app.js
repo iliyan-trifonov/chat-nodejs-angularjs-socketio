@@ -141,6 +141,9 @@ io.on('connection', function (socket) {
             sendMessageToChannel(channel, user.username + ' left');
             console.log('channel left', channel);
             socket.emit('channel left', channel);
+            //send the new users list to all users in the channel
+            var users = getChannelUsers(channel);
+            io.to(channel).emit('channel users list', users);
         });
     });
 
@@ -237,6 +240,9 @@ function destroyUser (socketId) {
     channels.forEach(function (channelName) {
         removeUserFromChannel(user.uuid, channelName);
         sendMessageToChannel(channelName, user.username + ' left');
+        //send the new users list to all users in the channel
+        var users = getChannelUsers(channelName);
+        io.to(channelName).emit('channel users list', users);
     });
 
     removeUser(user);

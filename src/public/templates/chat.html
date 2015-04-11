@@ -1,28 +1,29 @@
 <div class="row">
+    <div class="col-md-12">
 
-    <div class="page-header">
-        <h2>
-            Channel #{{channel}}
-            <button class="btn btn-sm btn-primary"
-                    ng-disabled="!channel"
-                    ng-click="leaveChannel()">Leave</button>
-        </h2>
-    </div>
+        <div class="page-header">
+            <h2>
+                Channel #{{channel}}
+                <button class="btn btn-sm btn-primary"
+                        ng-disabled="!channel"
+                        ng-click="leaveChannel()">Leave
+                </button>
+            </h2>
+        </div>
 
-    <div class="row">
-        <div class="col-md-10 chattext">
-            <div class="chat_container">
-                <div class="chat_contents" ng-bind-html="text"></div>
+        <div class="row">
+            <div class="col-md-10 chattext">
+                <div class="chat_container">
+                    <div class="chat_contents" ng-bind-html="text"></div>
+                </div>
+            </div>
+            <div class="col-md-2 chatusers text-center hidden-sm hidden-xs">
+                <span ng-if="users"><strong>Users:</strong></span><br/>
+                <span ng-repeat="user in users | orderBy: 'user'">{{user}}<br/></span>
             </div>
         </div>
-        <div class="col-md-2 chatusers text-center hidden-sm hidden-xs">
-            <span ng-if="users"><strong>Users:</strong></span><br/>
-            <span ng-repeat="user in users | orderBy: 'user'">{{user}}<br /></span>
-        </div>
-    </div>
 
-    <div class="row">
-        <div class="col-md-12">
+        <div class="row">
             <div class="input-group">
                 <input id="messageinput"
                        type="text"
@@ -30,14 +31,16 @@
                        autofocus
                        ng-model="message"
                        ng-disabled="!channel"
-                       ng-keypress="messageKeyPressed($event)" />
-                <span class="input-group-btn">
-                    <button class="btn btn-primary"
-                            ng-disabled="!channel"
-                            ng-click="sendMessage()">Send</button>
-                </span>
+                       ng-keypress="messageKeyPressed($event)"/>
+            <span class="input-group-btn">
+                <button class="btn btn-primary"
+                        ng-disabled="!channel"
+                        ng-click="sendMessage()">Send
+                </button>
+            </span>
             </div>
         </div>
+
     </div>
 
 </div>
