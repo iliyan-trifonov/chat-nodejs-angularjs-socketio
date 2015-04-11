@@ -10,8 +10,8 @@
     ])
 
     .controller('ChannelCtrl', [
-        '$scope', '$modal', '$location', 'Channel', 'Storage',
-        function ($scope, $modal, $location, Channel, Storage) {
+        '$scope', '$location', 'Channel', 'Storage',
+        function ($scope, $location, Channel, Storage) {
 
             var user = Storage.user.get();
 
@@ -55,6 +55,12 @@
     .controller('ChatCtrl', [
         '$scope', 'Channel', 'Chat', '$location', 'Storage', 'ChatSocket',
         function ($scope, Channel, Chat, $location, Storage, ChatSocket) {
+
+            setTimeout(function () {
+                angular.element(
+                    document.querySelector('#messageinput')
+                ).focus();
+            });
 
             var user = Storage.user.get();
             var chatContents = angular.element(
@@ -103,7 +109,10 @@
             $scope.leaveChannel = function () {
                 socket.emit(
                     'leave channel',
-                    { username: user.username },
+                    {
+                        uuid: user.uuid,
+                        username: user.username
+                    },
                     $scope.channel
                 );
             };
@@ -117,9 +126,11 @@
                 Channel.name.set(channel.name);
                 Channel.getUsers($scope.channel);
                 ChatSocket.channel.getMessages($scope.channel);
-                angular.element(
-                    document.querySelector('#messageinput')
-                ).focus();
+                setTimeout(function () {
+                    angular.element(
+                        document.querySelector('#messageinput')
+                    ).focus();
+                });
             });
 
             $scope.$on('channel users list', function (event, users) {

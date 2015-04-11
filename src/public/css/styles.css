@@ -12,8 +12,7 @@ body {
 }
 
 .chatusers {
-    border: 1px dashed black;
-    border-left: none;
+    border: 1px solid black;
     border-bottom: none;
     height: 400px;
 }

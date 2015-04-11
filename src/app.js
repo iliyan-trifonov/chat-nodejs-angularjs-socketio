@@ -26,6 +26,7 @@ io.on('connection', function (socket) {
                 if (clients[i].socket.id === socket.id) {
                     clients[i].channels.forEach(function (channel) {
                         var message = formatChannelMessage(clients[i].username + ' left the channel');
+                        console.log('sending message', message, channel);
                         io.to(channel).emit(
                             'new channel message',
                             message
@@ -35,11 +36,16 @@ io.on('connection', function (socket) {
                         for (var j in channels[channel].users) {
                             if (channels[channel].users.hasOwnProperty(j)) {
                                 if (channels[channel].users[j].uuid === clients[i].uuid) {
+                                    console.log(
+                                        'deleting user from channels[channel].users[j]',
+                                        channels[channel].users[j].username
+                                    );
                                     delete channels[channel].users[j];
                                 }
                             }
                         }
                     });
+                    console.log('deleting user from clients[i]', clients[i].username);
                     delete clients[i];
                     return;
                 }
@@ -70,11 +76,32 @@ io.on('connection', function (socket) {
     });
 
     socket.on('join channel', function (user, channel) {
-        //console.log('joining channel', user, channel);
+        console.log('joining channel', user, channel);
         if (!channel) {
             console.log('join channel err', channel);
             socket.emit('join channel err', channel);
             return false;
+        }
+        for (var i in clients[user.uuid].channels) {
+            if (clients[user.uuid].channels.hasOwnProperty(i)) {
+                console.log('channel', clients[user.uuid].channels[i]);
+                (function (i) {
+                    socket.leave(clients[user.uuid].channels[i], function (err) {
+                        if (err) {
+                            console.log('on join: leave channel err', err);
+                            socket.emit('on join: leave channel err', err);
+                            return false;
+                        }
+                        var message = formatChannelMessage(user.username + ' left/changed the channel');
+                        io.to(clients[user.uuid].channels[i]).emit(
+                            'new channel message',
+                            message
+                        );
+                        addMessage(clients[user.uuid].channels[i], message.text);
+                        console.log('on join: left channel',clients[user.uuid].channels[i]);
+                    });
+                })(i);
+            }
         }
         //TODO: check here if channel is created and has a password, check the pass, emit error if needed
         socket.join(channel.name, function (err) {
@@ -194,6 +221,15 @@ io.on('connection', function (socket) {
                     }
                 }
             }
+
+            for (var j in clients[user.uuid].channels) {
+                if (clients[user.uuid].channels.hasOwnProperty(j)) {
+                    if (clients[user.uuid].channels[j].name === channel) {
+                        delete clients[user.uuid].channels[j];
+                    }
+                }
+            }
+
         });
     });
 
@@ -217,7 +253,7 @@ io.on('connection', function (socket) {
     socket.on('get messages', function (channel) {
         console.log('get messages', channel);
         var messages = getMessages(channel);
-        console.log('messages', messages);
+        //console.log('messages', messages);
         socket.emit('channel messages', messages);
     });
 
@@ -251,7 +287,7 @@ function addMessage(channel, text) {
     if (messages[channel].length > 100) {
         messages[channel].splice(0, 1);
     }
-    console.log('messages for ' + channel, messages[channel]);
+    //console.log('messages for ' + channel, messages[channel]);
 }
 
 function getMessages(channel) {
@@ -260,6 +296,6 @@ function getMessages(channel) {
     if (messages[channel]) {
         result = messages[channel];
     }
-    console.log('result', result);
+    //console.log('result', result);
     return result;
 }

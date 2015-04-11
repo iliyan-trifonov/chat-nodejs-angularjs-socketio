@@ -5,8 +5,7 @@
         'Chat.controllers',
         'Chat.services',
         'ngRoute',
-        'ngSanitize',
-        'ui.bootstrap'
+        'ngSanitize'
     ])
 
     .config(['$routeProvider', function ($routeProvider) {

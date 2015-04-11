@@ -15,13 +15,14 @@
                 <div class="chat_contents" ng-bind-html="text"></div>
             </div>
         </div>
-        <div class="col-md-2 chatusers text-center">
+        <div class="col-md-2 chatusers text-center hidden-sm hidden-xs">
             <span ng-if="users"><strong>Users:</strong></span><br/>
             <span ng-repeat="user in users | orderBy: 'user'">{{user}}<br /></span>
         </div>
     </div>
 
     <div class="row">
+        <div smilies="message"></div>
         <div class="input-group">
             <input id="messageinput"
                    type="text"
