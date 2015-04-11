@@ -20,37 +20,17 @@ http.listen(3000, function () {
 io.on('connection', function (socket) {
     console.log('a user connected');
     socket.on('disconnect', function(){
-        console.log('user disconnected');
-        for (var i in clients) {
-            if (clients.hasOwnProperty(i)) {
-                if (clients[i].socket.id === socket.id) {
-                    clients[i].channels.forEach(function (channel) {
-                        var message = formatChannelMessage(clients[i].username + ' left the channel');
-                        console.log('sending message', message, channel);
-                        io.to(channel).emit(
-                            'new channel message',
-                            message
-                        );
-                        addMessage(channel, message.text);
+        console.log('a user disconnected');
+        var user = findUserBySocketId(socket.id);
+        var channels = getUserChannels(user.uuid);
 
-                        for (var j in channels[channel].users) {
-                            if (channels[channel].users.hasOwnProperty(j)) {
-                                if (channels[channel].users[j].uuid === clients[i].uuid) {
-                                    console.log(
-                                        'deleting user from channels[channel].users[j]',
-                                        channels[channel].users[j].username
-                                    );
-                                    delete channels[channel].users[j];
-                                }
-                            }
-                        }
-                    });
-                    console.log('deleting user from clients[i]', clients[i].username);
-                    delete clients[i];
-                    return;
-                }
-            }
-        }
+        channels.forEach(function (channelName) {
+            removeUserFromChannel(user.uuid, channelName);
+            sendMessageToChannel(channelName, user.username + ' left the channel');
+        });
+
+        delete clients[user.uuid];
+        delete sockets[user.socketId];
     });
 
     socket.on('create channel', function (channel) {
@@ -82,27 +62,14 @@ io.on('connection', function (socket) {
             socket.emit('join channel err', channel);
             return false;
         }
-        for (var i in clients[user.uuid].channels) {
-            if (clients[user.uuid].channels.hasOwnProperty(i)) {
-                console.log('channel', clients[user.uuid].channels[i]);
-                (function (i) {
-                    socket.leave(clients[user.uuid].channels[i], function (err) {
-                        if (err) {
-                            console.log('on join: leave channel err', err);
-                            socket.emit('on join: leave channel err', err);
-                            return false;
-                        }
-                        var message = formatChannelMessage(user.username + ' left/changed the channel');
-                        io.to(clients[user.uuid].channels[i]).emit(
-                            'new channel message',
-                            message
-                        );
-                        addMessage(clients[user.uuid].channels[i], message.text);
-                        console.log('on join: left channel',clients[user.uuid].channels[i]);
-                    });
-                })(i);
-            }
-        }
+
+        var chans = getUserChannels(user.uuid);
+
+        chans.forEach(function (chan) {
+            removeUserFromChannel(user.uuid, chan);
+            sendMessageToChannel(chan, user.username + ' left/changed the channel');
+        });
+
         //TODO: check here if channel is created and has a password, check the pass, emit error if needed
         socket.join(channel.name, function (err) {
             if (err) {
@@ -112,31 +79,20 @@ io.on('connection', function (socket) {
             }
 
             if (!channels[channel.name]) {
-                //console.log('adding channel to the array', channel);
                 channels[channel.name] = {
                     name: channel.name,
                     password: null,
                     users: []
                 };
+                console.log('added channel to the array', channels[channel.name]);
             }
 
-            //make a reference
-            channels[channel.name].users[user.uuid] = clients[user.uuid];
-
-            //console.log('uuid', user.uuid, 'clients', clients);
-
-            clients[user.uuid].channels.push(channel.name);
+            addUserToChannel(user.uuid, channel.name);
 
             socket.emit('joined channel', channel);
             console.log('joined channel', channel);
-            //console.log('sending message to channel', channel, 'from user', user.username);
-            var message = formatChannelMessage(user.username + ' joined the channel');
-            io.to(channel.name).emit(
-                'new channel message',
-                message
-            );
-            addMessage(channel.name, message.text);
-            console.log('sent message to channel', channel, message.text);
+
+            sendMessageToChannel(channel.name, user.username + ' joined the channel');
         });
     });
 
@@ -154,23 +110,26 @@ io.on('connection', function (socket) {
     //TODO: genName(cb) for the username
     socket.on('create user', function () {
         var uuid = hat();
-        clients[uuid] = {
+        var user = {
             uuid: uuid,
             username: 'Anonymous' + (Math.floor(Math.random() * 10000) + 1000),
             channels: [],
-            socket: { id: socket.id }
+            socketId: socket.id
         };
+        addUser(user);
         console.log('created new user', clients[uuid]);
         socket.emit('user created', clients[uuid]);
     });
 
     socket.on('known user', function (user) {
-        clients[user.uuid] = {
+        var userToAdd = {
             uuid: user.uuid,
             username: user.username,
             channels: [],
-            socket: { id: socket.id }
+            socketId: socket.id
         };
+        addUser(userToAdd);
+        console.log('known user added', userToAdd);
         //socket.emit('known user ready', clients[uuid]);
     });
 
@@ -182,13 +141,9 @@ io.on('connection', function (socket) {
             return false;
         }
         var users = [];
-        //console.log('current channels', channels);
-        for (var i in channels[channel].users) {
-            if (channels[channel].users.hasOwnProperty(i)) {
-                //console.log('adding user', channels[channel].users[i].username);
-                users.push(channels[channel].users[i].username);
-            }
-        }
+        channels[channel].users.forEach(function (uuid) {
+            users.push(clients[uuid].username);
+        });
         console.log('users list to send', users);
         socket.emit('channel users list', users);
     });
@@ -203,33 +158,11 @@ io.on('connection', function (socket) {
             }
 
             console.log('channel left', channel);
-
             socket.emit('channel left', channel);
 
-            var message = formatChannelMessage(user.username + ' left the channel');
+            removeUserFromChannel(user.uuid, channel);
 
-            io.to(channel).emit(
-                'new channel message',
-                message
-            );
-            addMessage(channel, message.text);
-
-            for (var i in channels[channel].users) {
-                if (channels[channel].users.hasOwnProperty(i)) {
-                    if (channels[channel].users[i].uuid === user.uuid) {
-                        delete channels[channel].users[i];
-                    }
-                }
-            }
-
-            for (var j in clients[user.uuid].channels) {
-                if (clients[user.uuid].channels.hasOwnProperty(j)) {
-                    if (clients[user.uuid].channels[j].name === channel) {
-                        delete clients[user.uuid].channels[j];
-                    }
-                }
-            }
-
+            sendMessageToChannel(channel, user.username + ' left the channel');
         });
     });
 
@@ -263,6 +196,7 @@ io.on('connection', function (socket) {
 
 var channels = {};
 var clients = {};
+var sockets = {};
 var messages = {};
 
 function formatMessage(username, text) {
@@ -298,4 +232,75 @@ function getMessages(channel) {
     }
     //console.log('result', result);
     return result;
+}
+
+function addUser (user) {
+    clients[user.uuid] = user;
+    sockets[user.socketId] = clients[user.uuid];
+}
+
+function removeUser (user) {
+    delete clients[user.uuid];
+    delete sockets[user.socketId];
+}
+
+function addUserToChannel (uuid, channelName) {
+    console.log('channels', channels);
+    channels[channelName].users.push(uuid);
+    clients[uuid].channels.push(channelName);
+}
+
+function removeUserFromChannel (uuid, channelName) {
+    for (var i in channels[channelName].users) {
+        if (channels[channelName].users.hasOwnProperty(i)) {
+            if (channels[channelName].users[i] === uuid) {
+                delete channels[channelName].users[i];
+                //return;
+            }
+        }
+    }
+    var user = clients[uuid];
+    for (var j in user.channels) {
+        if (user.channels.hasOwnProperty(j)) {
+            if (user.channels[j] === channelName) {
+                delete user.channels[j];
+                //return;
+            }
+        }
+    }
+}
+
+function destroyUser (socketId) {
+    var user = findUserBySocketId(socketId);
+
+}
+
+function findUserBySocketId (socketId) {
+    return sockets[socketId];
+}
+
+function addChannel (channel) {
+    channels[channel.name] = channel;
+}
+
+function removeChannel (channel) {
+    delete channels[channel.name];
+}
+
+function removeChannelFromUser (uuid, channelName) {
+
+}
+
+function getUserChannels (uuid) {
+    return clients[uuid].channels;
+}
+
+function sendMessageToChannel (channelName, text) {
+    var message = formatChannelMessage(text);
+    console.log('sending message', message, channelName);
+    io.to(channelName).emit(
+        'new channel message',
+        message
+    );
+    addMessage(channelName, message.text);
 }
