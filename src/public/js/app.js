@@ -5,7 +5,8 @@
         'Chat.controllers',
         'Chat.services',
         'ngRoute',
-        'ngSanitize'
+        'ngSanitize',
+        'ui.bootstrap'
     ])
 
     .config(['$routeProvider', function ($routeProvider) {
@@ -35,8 +36,8 @@
     }])
 
     .run([
-        'Channel', '$location', '$rootScope', 'Storage', 'Chat', '$log',
-        function (Channel, $location, $rootScope, Storage, Chat, $log) {
+        'Channel', '$location', '$rootScope', 'Storage', 'Chat', '$log', '$modal',
+        function (Channel, $location, $rootScope, Storage, Chat, $log, $modal) {
 
             var user = Storage.user.get();
             var channel = Storage.channel.get();
@@ -44,6 +45,13 @@
             //TODO: use MenuCtrl surrounding the top menu only, no rootScope
             $rootScope.Channel = Channel;
             $rootScope.user = user.username;
+
+            $rootScope.$on(
+                'user updated',
+                function (event, uuid, oldUsername, newUsername) {
+                    $rootScope.user = newUsername;
+                }
+            );
 
             if (!user || !user.uuid) {
                 Storage.user.set({});
@@ -113,9 +121,23 @@
                 $rootScope.$broadcast('channel messages', messages);
             });
 
-            socket.on('error', function (error) {
-                $log.info('socket:error', error);
-                $rootScope.$broadcast('error', error);
+            socket.on('chat error', function (error) {
+                $log.error('socket:chat error', error);
+                $rootScope.$broadcast('chat error', error);
+                //
+                $modal.open({
+                    templateUrl: 'myModalContent.html',
+                    controller: 'ModalInstanceCtrl',
+                    size: 'sm',
+                    resolve: {
+                        title: function () {
+                            return 'Error';
+                        },
+                        body: function () {
+                            return error.text;
+                        }
+                    }
+                });
             });
 
         }

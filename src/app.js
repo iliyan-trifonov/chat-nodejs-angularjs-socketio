@@ -36,6 +36,9 @@ io.on('connection', function (socket) {
             });
             return false;
         }
+        var user = findUserBySocketId(socket.id);
+        //TODO: remove this for multichannel support
+        removeUserFromAllChannels(user);
         socket.join(channel, function (err) {
             if (err) {
                 socketError(socket, {
@@ -47,6 +50,14 @@ io.on('connection', function (socket) {
             addChannel(channel);
             socket.emit('joined channel', channel);
             console.info('joined channel', channel);
+            //repeats with the join channel code below
+            addUserToChannel(user.uuid, channel.name);
+            sendMessageToChannel(channel.name, user.username + ' joined');
+            socket.emit('joined channel', channel);
+            console.log('joined channel', channel);
+            //send the new users list to all users in the channel
+            var users = getChannelUsers(channel.name);
+            io.to(channel.name).emit('channel users list', users);
         });
     });
 
@@ -59,6 +70,7 @@ io.on('connection', function (socket) {
                 type: 'join channel err',
                 text: 'Could not join channel ' + channel.name + '! Wrong password!'
             });
+            return false;
         }
         socket.join(channel.name, function (err) {
             if (err) {
@@ -276,8 +288,8 @@ function channelExists (channelName) {
 
 function socketError (socket, error) {
     //TODO: check for valid type and text values
-    socket.emit('error', error);
-    console.error('socket error', error);
+    socket.emit('chat error', error);
+    console.error('chat error', error);
 }
 
 function removeUserFromAllChannels (user) {

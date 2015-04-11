@@ -208,6 +208,18 @@
         }
     ])
 
+    .controller('ModalInstanceCtrl', [
+        '$scope', '$modalInstance', 'title', 'body',
+        function ($scope, $modalInstance, title, body) {
+            $scope.title = title;
+            $scope.body = body;
+
+            $scope.ok = function () {
+                $modalInstance.close();
+            };
+        }
+    ])
+
     ;
 
 })(angular);
