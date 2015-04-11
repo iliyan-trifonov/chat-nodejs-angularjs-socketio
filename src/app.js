@@ -75,6 +75,9 @@ io.on('connection', function (socket) {
             sendMessageToChannel(channel.name, user.username + ' joined');
             socket.emit('joined channel', channel);
             console.log('joined channel', channel);
+            //send the new users list to all users in the channel
+            var users = getChannelUsers(channel.name);
+            io.to(channel.name).emit('channel users list', users);
         });
     });
 
