@@ -30,7 +30,7 @@ io.on('connection', function (socket) {
     socket.on('create channel', function (channel) {
         console.info('socket:create channel', channel);
         if (channelExists(channel.name)) {
-            socketError({
+            socketError(socket, {
                 type: 'channel exists',
                 text: 'Channel ' + channel.name + ' already exists!'
             });
@@ -38,7 +38,7 @@ io.on('connection', function (socket) {
         }
         socket.join(channel, function (err) {
             if (err) {
-                socketError({
+                socketError(socket, {
                     type: 'join channel err',
                     text: 'Could not join channel ' + channel + '! Error: ' + err
                 });
@@ -55,14 +55,14 @@ io.on('connection', function (socket) {
         //TODO: remove this for multichannel support
         removeUserFromAllChannels(user);
         if (channels[channel.name] && channels[channel.name].password !== channel.password) {
-            socketError({
+            socketError(socket, {
                 type: 'join channel err',
                 text: 'Could not join channel ' + channel.name + '! Wrong password!'
             });
         }
         socket.join(channel.name, function (err) {
             if (err) {
-                socketError({
+                socketError(socket, {
                     type: 'join channel err',
                     text: 'Could not join channel ' + channel.name + '! Error: ' + err
                 });
@@ -116,7 +116,7 @@ io.on('connection', function (socket) {
     socket.on('get channel users list', function (channel) {
         console.log('socket:get channel users list', channel);
         if (!channelExists(channel)) {
-            socketError({
+            socketError(socket, {
                 type: 'get channel users list err',
                 text: 'Could not get channel users list! Channel doesn\'t exist!'
             });
@@ -131,7 +131,7 @@ io.on('connection', function (socket) {
         console.log('leave channel', user, channel);
         socket.leave(channel, function (err) {
             if (err) {
-                socketError({
+                socketError(socket, {
                     type: 'leave channel err',
                     text: 'Could not leave channel ' + channel + '! Error: ' + err
                 });
@@ -274,7 +274,7 @@ function channelExists (channelName) {
     return channels[channelName];
 }
 
-function socketError (error) {
+function socketError (socket, error) {
     //TODO: check for valid type and text values
     socket.emit('error', error);
     console.error('socket error', error);
