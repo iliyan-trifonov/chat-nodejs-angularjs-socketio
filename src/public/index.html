@@ -39,9 +39,9 @@
                 <li><a ng-href="#/">Home</a></li>
                 <li><a ng-href="#/profile">Profile</a></li>
                 <li><a ng-href="#/channel">Channel</a></li>
-                <li><a ng-href="#/chat" ng-if="Channel.name.get()">Chat</a></li>
+                <li><a ng-href="#/chat" ng-cloak ng-if="Channel.name.get()">Chat</a></li>
             </ul>
-            <ul class="nav navbar-nav navbar-right" ng-if="user">
+            <ul class="nav navbar-nav navbar-right" ng-cloak ng-if="user">
                 <li><a ng-href="#/profile">Welcome, {{user}}!</a></li>
             </ul>
         </div>
