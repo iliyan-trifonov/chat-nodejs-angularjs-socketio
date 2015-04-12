@@ -5,7 +5,8 @@ var express = require('express'),
     http = require('http').Server(app),
     io = require('socket.io')(http),
     hat = require('hat'),
-    moment = require('moment');
+    moment = require('moment'),
+    log = require('custom-logger').config({ timestamp: "dd mmm HH:MM:ss" });
 
 //remove these if using reverse proxy for static files
 app.use(express.static(__dirname + '/public'));
@@ -15,20 +16,20 @@ app.get('/', function (req, res) {
 //remove these if using reverse proxy for static files
 
 http.listen(3000, function () {
-    console.log('listening on *:3000');
+    log.info('listening on *:3000');
 });
 
 io.on('connection', function (socket) {
 
-    console.info('a user connected');
+    log.info('a user connected');
 
     socket.on('disconnect', function(){
-        console.info('a user disconnected');
+        log.info('a user disconnected');
         destroyUser(socket.id);
     });
 
     socket.on('create channel', function (channel) {
-        console.info('socket:create channel', channel);
+        log.info('socket:create channel', channel);
         if (channelExists(channel.name)) {
             socketError(socket, {
                 type: 'channel exists',
@@ -49,12 +50,12 @@ io.on('connection', function (socket) {
             }
             addChannel(channel);
             socket.emit('joined channel', channel);
-            console.info('joined channel', channel);
+            log.info('joined channel', channel);
             //repeats with the join channel code below
             addUserToChannel(user.uuid, channel.name);
             sendMessageToChannel(channel.name, user.username + ' joined');
             socket.emit('joined channel', channel);
-            console.log('joined channel', channel);
+            log.info('joined channel', channel);
             //send the new users list to all users in the channel
             var users = getChannelUsers(channel.name);
             io.to(channel.name).emit('channel users list', users);
@@ -62,7 +63,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('join channel', function (user, channel) {
-        console.log('socket:join channel', user, channel);
+        log.info('socket:join channel', user, channel);
         //TODO: remove this for multichannel support
         removeUserFromAllChannels(user);
         if (channels[channel.name] && channels[channel.name].password !== channel.password) {
@@ -86,7 +87,7 @@ io.on('connection', function (socket) {
             addUserToChannel(user.uuid, channel.name);
             sendMessageToChannel(channel.name, user.username + ' joined');
             socket.emit('joined channel', channel);
-            console.log('joined channel', channel);
+            log.info('joined channel', channel);
             //send the new users list to all users in the channel
             var users = getChannelUsers(channel.name);
             io.to(channel.name).emit('channel users list', users);
@@ -94,7 +95,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('new message', function (message) {
-        console.log('new message', message);
+        log.info('new message', message);
         var text = formatMessage(message.user, message.text);
         addMessage(message.channel, text.text);
         io.to(message.channel).emit(
@@ -112,21 +113,21 @@ io.on('connection', function (socket) {
             socketId: socket.id
         };
         addUser(user);
-        console.log('created new user', clients[uuid]);
+        log.info('created new user', clients[uuid]);
         socket.emit('user created', clients[uuid]);
     });
 
     socket.on('known user', function (user) {
-        console.info('socket: known user', user);
+        log.info('socket: known user', user);
         user.channels = [];
         user.socketId = socket.id;
         addUser(user);
-        console.info('known user added', user);
+        log.info('known user added', user);
         //socket.emit('known user ready', clients[uuid]);
     });
 
     socket.on('get channel users list', function (channel) {
-        console.log('socket:get channel users list', channel);
+        log.info('socket:get channel users list', channel);
         if (!channelExists(channel)) {
             socketError(socket, {
                 type: 'get channel users list err',
@@ -135,12 +136,12 @@ io.on('connection', function (socket) {
             return false;
         }
         var users = getChannelUsers(channel);
-        console.log('channel users list', users);
+        log.info('channel users list', users);
         socket.emit('channel users list', users);
     });
 
     socket.on('leave channel', function (user, channel) {
-        console.log('leave channel', user, channel);
+        log.info('leave channel', user, channel);
         socket.leave(channel, function (err) {
             if (err) {
                 socketError(socket, {
@@ -151,7 +152,7 @@ io.on('connection', function (socket) {
             }
             removeUserFromChannel(user.uuid, channel);
             sendMessageToChannel(channel, user.username + ' left');
-            console.log('channel left', channel);
+            log.info('channel left', channel);
             socket.emit('channel left', channel);
             //send the new users list to all users in the channel
             var users = getChannelUsers(channel);
@@ -160,7 +161,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('update user', function (uuid, newUsername) {
-        console.info('socket:update user', uuid, newUsername);
+        log.info('socket:update user', uuid, newUsername);
         var oldUsername = clients[uuid].username;
         clients[uuid].username = newUsername;
         socket.emit('user updated', uuid, oldUsername, newUsername);
@@ -171,7 +172,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('get messages', function (channel) {
-        console.info('socket:get messages', channel);
+        log.info('socket:get messages', channel);
         var messages = getMessages(channel);
         socket.emit('channel messages', messages);
     });
@@ -199,7 +200,7 @@ function formatChannelMessage(text) {
 }
 
 function addMessage(channel, text) {
-    console.log('addMessage()', channel, text);
+    log.info('addMessage()', channel, text);
     if (!messages[channel]) {
         messages[channel] = [];
     }
@@ -207,16 +208,16 @@ function addMessage(channel, text) {
     if (messages[channel].length > 100) {
         messages[channel].splice(0, 1);
     }
-    //console.log('messages for ' + channel, messages[channel]);
+    //log.info('messages for ' + channel, messages[channel]);
 }
 
 function getMessages(channel) {
-    console.info('getMessages('+channel+')');
+    log.info('getMessages('+channel+')');
     var result = [];
     if (messages[channel]) {
         result = messages[channel];
     }
-    //console.log('result', result);
+    //log.info('result', result);
     return result;
 }
 
@@ -231,7 +232,7 @@ function removeUser (user) {
 }
 
 function addUserToChannel (uuid, channelName) {
-    console.info('channels', channels);
+    log.info('channels', channels);
     channels[channelName].users.push(uuid);
     clients[uuid].channels.push(channelName);
 }
@@ -274,7 +275,7 @@ function getUserChannels (uuid) {
 
 function sendMessageToChannel (channelName, text) {
     var message = formatChannelMessage(text);
-    console.log('sending message', message, channelName);
+    log.info('sending message', message, channelName);
     io.to(channelName).emit(
         'new channel message',
         message
@@ -289,7 +290,7 @@ function channelExists (channelName) {
 function socketError (socket, error) {
     //TODO: check for valid type and text values
     socket.emit('chat error', error);
-    console.error('chat error', error);
+    log.error('chat error', error);
 }
 
 function removeUserFromAllChannels (user) {

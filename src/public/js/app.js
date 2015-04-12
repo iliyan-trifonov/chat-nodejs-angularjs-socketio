@@ -46,6 +46,7 @@
             $rootScope.Channel = Channel;
             $rootScope.user = user.username;
 
+            //may be moved to the socket.on code
             $rootScope.$on(
                 'user updated',
                 function (event, uuid, oldUsername, newUsername) {
