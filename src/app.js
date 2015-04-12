@@ -255,6 +255,9 @@ function addUser (user) {
 }
 
 function removeUser (user) {
+    if (!user || !user.uuid) {
+        return false;
+    }
     delete clients[user.uuid];
     delete sockets[user.socketId];
 }
@@ -274,7 +277,13 @@ function removeUserFromChannel (uuid, channelName) {
 }
 
 function destroyUser (socketId) {
+    if (!socketId) {
+        return false;
+    }
     var user = findUserBySocketId(socketId);
+    if (!user || !user.uuid) {
+        return false;
+    }
     var channels = getUserChannels(user.uuid);
 
     channels.forEach(function (channelName) {
