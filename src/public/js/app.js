@@ -54,6 +54,8 @@
                 }
             );
 
+
+
             if (!user || !user.uuid) {
                 Storage.user.set({});
                 Storage.channel.set({});
@@ -139,6 +141,37 @@
                         }
                     }
                 });
+            });
+
+            $rootScope.isConnected = false;
+            socket.on('connect', function () {
+                $log.info('socket:connect');
+                $rootScope.$apply(function () {
+                    $rootScope.isConnected = true;
+                });
+            });
+            socket.on('disconnect', function () {
+                $log.info('socket:disconnect');
+                $rootScope.$apply(function () {
+                    $rootScope.isConnected = false;
+                });
+                $modal.open({
+                    templateUrl: 'myModalContent.html',
+                    controller: 'ModalInstanceCtrl',
+                    size: 'sm',
+                    resolve: {
+                        title: function () {
+                            return 'Error';
+                        },
+                        body: function () {
+                            return 'You have been disconnected! Please refresh.';
+                        }
+                    }
+                });
+            });
+            socket.on('error', function (err) {
+                $log.info('socket:error', err);
+                //...
             });
 
         }
