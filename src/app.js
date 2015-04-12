@@ -30,6 +30,13 @@ io.on('connection', function (socket) {
 
     socket.on('create channel', function (channel) {
         log.info('socket:create channel', channel);
+        if (!channel) {
+            socketError(socket, {
+                type: 'create channel err',
+                text: 'Channel not set!'
+            });
+            return false;
+        }
         if (channelExists(channel.name)) {
             socketError(socket, {
                 type: 'channel exists',
@@ -38,6 +45,13 @@ io.on('connection', function (socket) {
             return false;
         }
         var user = findUserBySocketId(socket.id);
+        if (!user) {
+            socketError(socket, {
+                type: 'create channel err',
+                text: 'Could not find user by this socket\'s id!'
+            });
+            return false;
+        }
         //TODO: remove this for multichannel support
         removeUserFromAllChannels(user);
         socket.join(channel, function (err) {
@@ -64,6 +78,13 @@ io.on('connection', function (socket) {
 
     socket.on('join channel', function (user, channel) {
         log.info('socket:join channel', user, channel);
+        if (!user || !channel) {
+            socketError(socket, {
+                type: 'join channel err',
+                text: 'User or channel not set!'
+            });
+            return false;
+        }
         //TODO: remove this for multichannel support
         removeUserFromAllChannels(user);
         if (channels[channel.name] && channels[channel.name].password !== channel.password) {
@@ -119,6 +140,13 @@ io.on('connection', function (socket) {
 
     socket.on('known user', function (user) {
         log.info('socket: known user', user);
+        if (!user || !user.uuid) {
+            socketError(socket, {
+                type: 'known user err',
+                text: 'User not set!'
+            });
+            return false;
+        }
         user.channels = [];
         user.socketId = socket.id;
         addUser(user);
