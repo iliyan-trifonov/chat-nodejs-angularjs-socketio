@@ -6,7 +6,8 @@ var express = require('express'),
     io = require('socket.io')(http),
     hat = require('hat'),
     moment = require('moment'),
-    log = require('custom-logger').config({ timestamp: "dd mmm HH:MM:ss" });
+    //log = require('custom-logger').config({ timestamp: "dd mmm HH:MM:ss" });
+    log = require('./logger');
 
 //remove these if using reverse proxy for static files
 app.use(express.static(__dirname + '/public'));
