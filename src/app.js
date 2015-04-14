@@ -22,15 +22,15 @@ http.listen(3000, function () {
 
 io.on('connection', function (socket) {
 
-    log.info('a user connected');
+    log.info('a user connected', { socketId: socket.id });
 
     socket.on('disconnect', function(){
-        log.info('a user disconnected');
+        log.info('a user disconnected', { socketId: socket.id });
         destroyUser(socket.id);
     });
 
     socket.on('create channel', function (channel) {
-        log.info('socket:create channel', channel);
+        log.info('socket:create channel', {channel: channel});
         if (!channel) {
             socketError(socket, {
                 type: 'create channel err',
@@ -65,12 +65,12 @@ io.on('connection', function (socket) {
             }
             addChannel(channel);
             socket.emit('joined channel', channel);
-            log.info('joined channel', channel);
+            log.info('joined channel', {channel: channel});
             //repeats with the join channel code below
             addUserToChannel(user.uuid, channel.name);
             sendMessageToChannel(channel.name, user.username + ' joined');
             socket.emit('joined channel', channel);
-            log.info('joined channel', channel);
+            log.info('joined channel', {channel: channel});
             //send the new users list to all users in the channel
             var users = getChannelUsers(channel.name);
             io.to(channel.name).emit('channel users list', users);
@@ -109,7 +109,7 @@ io.on('connection', function (socket) {
             addUserToChannel(user.uuid, channel.name);
             sendMessageToChannel(channel.name, user.username + ' joined');
             socket.emit('joined channel', channel);
-            log.info('joined channel', channel);
+            log.info('joined channel', {channel: channel});
             //send the new users list to all users in the channel
             var users = getChannelUsers(channel.name);
             io.to(channel.name).emit('channel users list', users);
@@ -117,7 +117,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('new message', function (message) {
-        log.info('new message', message);
+        log.info('new message', {text: message});
         var text = formatMessage(message.user, message.text);
         addMessage(message.channel, text.text);
         io.to(message.channel).emit(
@@ -135,12 +135,12 @@ io.on('connection', function (socket) {
             socketId: socket.id
         };
         addUser(user);
-        log.info('created new user', clients[uuid]);
+        log.info('created new user', {user: clients[uuid]});
         socket.emit('user created', clients[uuid]);
     });
 
     socket.on('known user', function (user) {
-        log.info('socket: known user', user);
+        log.info('socket: known user', {user: user});
         if (!user || !user.uuid) {
             socketError(socket, {
                 type: 'known user err',
@@ -151,12 +151,12 @@ io.on('connection', function (socket) {
         user.channels = [];
         user.socketId = socket.id;
         addUser(user);
-        log.info('known user added', user);
+        log.info('known user added', {user: user});
         //socket.emit('known user ready', clients[uuid]);
     });
 
     socket.on('get channel users list', function (channel) {
-        log.info('socket:get channel users list', channel);
+        log.info('socket:get channel users list', {channelName: channel});
         if (!channelExists(channel)) {
             socketError(socket, {
                 type: 'get channel users list err',
@@ -165,7 +165,7 @@ io.on('connection', function (socket) {
             return false;
         }
         var users = getChannelUsers(channel);
-        log.info('channel users list', users);
+        log.info('channel users list', {users: users});
         socket.emit('channel users list', users);
     });
 
@@ -181,7 +181,7 @@ io.on('connection', function (socket) {
             }
             removeUserFromChannel(user.uuid, channel);
             sendMessageToChannel(channel, user.username + ' left');
-            log.info('channel left', channel);
+            log.info('channel left', {channelName: channel});
             socket.emit('channel left', channel);
             //send the new users list to all users in the channel
             var users = getChannelUsers(channel);
@@ -201,7 +201,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('get messages', function (channel) {
-        log.info('socket:get messages', channel);
+        log.info('socket:get messages', {channelName: channel});
         var messages = getMessages(channel);
         socket.emit('channel messages', messages);
     });
@@ -229,7 +229,7 @@ function formatChannelMessage(text) {
 }
 
 function addMessage(channel, text) {
-    log.info('addMessage()', {channel: channel, text: text});
+    log.info('addMessage()', {channelName: channel, text: text});
     if (!messages[channel]) {
         messages[channel] = [];
     }
@@ -264,7 +264,7 @@ function removeUser (user) {
 }
 
 function addUserToChannel (uuid, channelName) {
-    log.info('channels', channels);
+    log.info('channels', {channels: channels});
     channels[channelName].users.push(uuid);
     clients[uuid].channels.push(channelName);
 }
@@ -313,7 +313,7 @@ function getUserChannels (uuid) {
 
 function sendMessageToChannel (channelName, text) {
     var message = formatChannelMessage(text);
-    log.info('sending message', {message: message, channelName: channelName});
+    log.info('sending message', {text: message, channelName: channelName});
     io.to(channelName).emit(
         'new channel message',
         message
@@ -328,7 +328,7 @@ function channelExists (channelName) {
 function socketError (socket, error) {
     //TODO: check for valid type and text values
     socket.emit('chat error', error);
-    log.error('chat error', error);
+    log.error('chat error', {text: error});
 }
 
 function removeUserFromAllChannels (user) {
