@@ -19,6 +19,7 @@ var logger = new (winston.Logger)({
 if (config.logger.graylog2.enable) {
     logger.add(require('winston-graylog2'), {
         name: 'Chat',
+        facility: 'NodeJS Chat App',
         handleExceptions: true,
         graylog: {
             servers: [{
