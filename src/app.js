@@ -17,7 +17,7 @@ app.get('/', function (req, res) {
 //remove these if using reverse proxy for static files
 
 http.listen(3000, function () {
-    log.info('listening on *:3000');
+    log.info('Chat App listening on *:3000');
 });
 
 io.on('connection', function (socket) {
@@ -78,7 +78,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('join channel', function (user, channel) {
-        log.info('socket:join channel', user, channel);
+        log.info('socket:join channel', {user: user, channel: channel});
         if (!user || !channel) {
             socketError(socket, {
                 type: 'join channel err',
@@ -170,7 +170,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('leave channel', function (user, channel) {
-        log.info('leave channel', user, channel);
+        log.info('leave channel', {user: user, channel: channel});
         socket.leave(channel, function (err) {
             if (err) {
                 socketError(socket, {
@@ -190,7 +190,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('update user', function (uuid, newUsername) {
-        log.info('socket:update user', uuid, newUsername);
+        log.info('socket:update user', {uuid: uuid, newUsername: newUsername});
         var oldUsername = clients[uuid].username;
         clients[uuid].username = newUsername;
         socket.emit('user updated', uuid, oldUsername, newUsername);
@@ -229,7 +229,7 @@ function formatChannelMessage(text) {
 }
 
 function addMessage(channel, text) {
-    log.info('addMessage()', channel, text);
+    log.info('addMessage()', {channel: channel, text: text});
     if (!messages[channel]) {
         messages[channel] = [];
     }
@@ -313,7 +313,7 @@ function getUserChannels (uuid) {
 
 function sendMessageToChannel (channelName, text) {
     var message = formatChannelMessage(text);
-    log.info('sending message', message, channelName);
+    log.info('sending message', {message: message, channelName: channelName});
     io.to(channelName).emit(
         'new channel message',
         message
