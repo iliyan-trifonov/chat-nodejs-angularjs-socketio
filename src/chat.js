@@ -24,7 +24,7 @@ function formatChannelMessage(text) {
 }
 
 function addMessage(channel, text) {
-    log.info('addMessage()', {channel: channel, text: text});
+    log.info('addMessage()', { channelName: channel, text: text });
     if (!messages[channel]) {
         messages[channel] = [];
     }
@@ -36,12 +36,11 @@ function addMessage(channel, text) {
 }
 
 function getMessages(channel) {
-    log.info('getMessages('+channel+')');
     var result = [];
     if (messages[channel]) {
         result = messages[channel];
     }
-    //log.info('result', result);
+    log.info('getMessages('+channel+')', { result: result });
     return result;
 }
 
@@ -59,7 +58,7 @@ function removeUser (user) {
 }
 
 function addUserToChannel (uuid, channelName) {
-    log.info('channels', channels);
+    log.info('channels', { channels: channels });
     channels[channelName].users.push(uuid);
     clients[uuid].channels.push(channelName);
 }
@@ -99,7 +98,7 @@ function findUserBySocketId (socketId) {
 
 function addChannel (channel) {
     //TODO: check when it happens to have a channel with users already populated
-    log.info('Adding new channel', channel);
+    log.info('Adding new channel', { channel: channel });
     channel.users = [];
     channels[channel.name] = channel;
 }
@@ -110,7 +109,7 @@ function getUserChannels (uuid) {
 
 function sendMessageToChannel (channelName, text) {
     var message = formatChannelMessage(text);
-    log.info('sending message', {message: message, channelName: channelName});
+    log.info('sending message', {text: message, channelName: channelName});
     io.to(channelName).emit(
         'new channel message',
         message
@@ -215,7 +214,7 @@ function joinChannel (socket, user, channel) {
         addUserToChannel(user.uuid, channel.name);
         sendMessageToChannel(channel.name, user.username + ' joined');
         socket.emit('joined channel', channel);
-        log.info('joined channel', channel);
+        log.info('joined channel', { channel: channel });
         //send the new users list to all users in the channel
         var users = getChannelUsers(channel.name);
         io.to(channel.name).emit('channel users list', users);
@@ -240,7 +239,7 @@ function handleCreateUser (socket) {
         socketId: socket.id
     };
     addUser(user);
-    log.info('created new user', clients[uuid]);
+    log.info('created new user', { user: clients[uuid] });
     socket.emit('user created', clients[uuid]);
 }
 
@@ -255,7 +254,7 @@ function handleKnownUser (socket, user) {
     user.channels = [];
     user.socketId = socket.id;
     addUser(user);
-    log.info('known user added', user);
+    log.info('known user added', { user: user });
     //socket.emit('known user ready', clients[uuid]);
 }
 
@@ -268,7 +267,7 @@ function handleGetChannelUsersList (socket, channel) {
         return false;
     }
     var users = getChannelUsers(channel);
-    log.info('channel users list', users);
+    log.info('channel users list', { users: users });
     socket.emit('channel users list', users);
 }
 
@@ -283,7 +282,7 @@ function handleLeaveChannel (socket, user, channel) {
         }
         removeUserFromChannel(user.uuid, channel);
         sendMessageToChannel(channel, user.username + ' left');
-        log.info('channel left', channel);
+        log.info('channel left', { channelName: channel });
         socket.emit('channel left', channel);
         //send the new users list to all users in the channel
         var users = getChannelUsers(channel);
@@ -318,7 +317,7 @@ exports.init = function (socket) {
         });
 
         socket.on('create channel', function (channel) {
-            log.info('socket:create channel', channel);
+            log.info('socket:create channel', { channel: channel });
             handleChannelCreate(socket, channel);
         });
 
@@ -328,7 +327,7 @@ exports.init = function (socket) {
         });
 
         socket.on('new message', function (message) {
-            log.info('new message', message);
+            log.info('new message', { text: message });
             handleNewMessage(message);
         });
 
@@ -338,12 +337,12 @@ exports.init = function (socket) {
         });
 
         socket.on('known user', function (user) {
-            log.info('socket: known user', user);
+            log.info('socket: known user', { user: user });
             handleKnownUser(socket, user);
         });
 
         socket.on('get channel users list', function (channel) {
-            log.info('socket:get channel users list', channel);
+            log.info('socket:get channel users list', { channelName: channel });
             handleGetChannelUsersList(socket, channel);
         });
 
@@ -358,7 +357,7 @@ exports.init = function (socket) {
         });
 
         socket.on('get messages', function (channel) {
-            log.info('socket:get messages', channel);
+            log.info('socket:get messages', { channelName: channel });
             handleGetMessages(socket, channel);
         });
 

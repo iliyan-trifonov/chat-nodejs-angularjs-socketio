@@ -39,7 +39,7 @@ exports.log = function (msg, meta) {
         return false;
     }
     if (!meta) {
-        meta = null;
+        meta = {};
     }
     logger.log(msg, meta);
 };
@@ -49,7 +49,7 @@ exports.info = function (msg, meta) {
         return false;
     }
     if (!meta) {
-        meta = null;
+        meta = {};
     }
     logger.info(msg, meta);
 };
@@ -59,7 +59,7 @@ exports.error = function (msg, meta) {
         return false;
     }
     if (!meta) {
-        meta = null;
+        meta = {};
     }
     logger.error(msg, meta);
 };
