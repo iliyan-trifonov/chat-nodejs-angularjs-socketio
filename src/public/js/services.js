@@ -8,7 +8,10 @@
             return {
                 'user': {
                     'create': function () {
-
+                        socket.emit('create user');
+                    },
+                    'known': function (user) {
+                        socket.emit('known user', user);
                     },
                     'update': function (uuid, newUsername) {
                         socket.emit('update user', uuid, newUsername);
@@ -18,11 +21,14 @@
                     'create': function (channel) {
 
                     },
-                    'join': function (channel) {
-
+                    'join': function (user, channel) {
+                        socket.emit('join channel', user, channel);
                     },
                     'getMessages': function (channel) {
                         socket.emit('get messages', channel);
+                    },
+                    'getUsers': function (channelName) {
+                        socket.emit('get channel users list', channelName);
                     }
                 }
             };

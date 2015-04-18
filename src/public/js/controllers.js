@@ -34,14 +34,6 @@
                 });
             };
 
-            $scope.$on('create channel error', function (error) {
-                $scope.error = error;
-            });
-
-            $scope.$on('join channel error', function (error) {
-                $scope.error = error;
-            });
-
             $scope.$on('joined channel', function (event, channel) {
                 Channel.name.set(channel.name);
                 Storage.channel.set(channel);

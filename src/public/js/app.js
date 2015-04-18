@@ -36,11 +36,12 @@
     }])
 
     .run([
-        'Channel', '$location', '$rootScope', 'Storage', 'Chat', '$log', '$modal',
-        function (Channel, $location, $rootScope, Storage, Chat, $log, $modal) {
+        'Channel', '$location', '$rootScope', 'Storage', 'Chat', '$log', '$modal', '$modalStack', 'ChatSocket',
+        function (Channel, $location, $rootScope, Storage, Chat, $log, $modal, $modalStack, ChatSocket) {
 
             var user = Storage.user.get();
             var channel = Storage.channel.get();
+            var disconnectedBefore = false;
 
             //TODO: use MenuCtrl surrounding the top menu only, no rootScope
             $rootScope.Channel = Channel;
@@ -53,8 +54,6 @@
                     $rootScope.user = newUsername;
                 }
             );
-
-
 
             if (!user || !user.uuid) {
                 Storage.user.set({});
@@ -128,6 +127,7 @@
                 $log.error('socket:chat error', error);
                 $rootScope.$broadcast('chat error', error);
                 //
+                $modalStack.dismissAll();
                 $modal.open({
                     templateUrl: 'myModalContent.html',
                     controller: 'ModalInstanceCtrl',
@@ -146,15 +146,29 @@
             $rootScope.isConnected = false;
             socket.on('connect', function () {
                 $log.info('socket:connect');
+                //reconnect to the user's channel
+                if (disconnectedBefore) {
+                    disconnectedBefore = false;
+                    $modalStack.dismissAll();
+                    var user = Storage.user.get();
+                    var channel = Storage.channel.get();
+                    if (channel && channel.name && user) {
+                        $location.path('/chat');
+                        ChatSocket.user.known(user);
+                        ChatSocket.channel.join(user, channel);
+                    }
+                }
                 $rootScope.$apply(function () {
                     $rootScope.isConnected = true;
                 });
             });
             socket.on('disconnect', function () {
                 $log.info('socket:disconnect');
+                disconnectedBefore = true;
                 $rootScope.$apply(function () {
                     $rootScope.isConnected = false;
                 });
+                $modalStack.dismissAll();
                 $modal.open({
                     templateUrl: 'myModalContent.html',
                     controller: 'ModalInstanceCtrl',

@@ -4,17 +4,20 @@ var config = require('./config.json'),
     winston = require('winston'),
     moment = require('moment');
 
-var logger = new (winston.Logger)({
-    transports: [
-        new (winston.transports.Console)({
-            colorize: true,
-            timestamp: function () {
-                return moment().format("D MMM HH:MM:ss")
-            },
-            handleExceptions: true
-        })
-    ]
-});
+if (config.logger.enable) {
+    var logger = new (winston.Logger)({
+        transports: [
+            new (winston.transports.Console)({
+                colorize: true,
+                timestamp: function () {
+                    return moment().format("D MMM HH:MM:ss")
+                },
+                handleExceptions: true,
+                humanReadableUnhandledException: true
+            })
+        ]
+    });
+}
 
 if (config.logger.graylog2.enable) {
     logger.add(require('winston-graylog2'), {
@@ -32,6 +35,9 @@ if (config.logger.graylog2.enable) {
 }
 
 exports.log = function (msg, meta) {
+    if (!config.logger.enable) {
+        return false;
+    }
     if (!meta) {
         meta = null;
     }
@@ -39,6 +45,9 @@ exports.log = function (msg, meta) {
 };
 
 exports.info = function (msg, meta) {
+    if (!config.logger.enable) {
+        return false;
+    }
     if (!meta) {
         meta = null;
     }
@@ -46,6 +55,9 @@ exports.info = function (msg, meta) {
 };
 
 exports.error = function (msg, meta) {
+    if (!config.logger.enable) {
+        return false;
+    }
     if (!meta) {
         meta = null;
     }
