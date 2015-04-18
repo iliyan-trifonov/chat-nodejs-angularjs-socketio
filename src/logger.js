@@ -11,7 +11,7 @@ if (config.logger.enable) {
         console: {
             colorize: true,
             timestamp: function () {
-                return moment().format("D MMM HH:MM:ss")
+                return moment().format("D MMM HH:mm:ss")
             },
             handleExceptions: true,
             humanReadableUnhandledException: true
