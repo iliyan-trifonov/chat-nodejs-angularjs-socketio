@@ -2,55 +2,64 @@
 
 var config = require('./config.json'),
     winston = require('winston'),
-    moment = require('moment');
+    moment = require('moment'),
+    log2console,
+    log2graylog;
 
 if (config.logger.enable) {
-    var logger = new (winston.Logger)({
-        transports: [
-            new (winston.transports.Console)({
-                colorize: true,
-                timestamp: function () {
-                    return moment().format("D MMM HH:MM:ss")
-                },
-                handleExceptions: true,
-                humanReadableUnhandledException: true
-            })
-        ]
-    });
-}
-
-if (config.logger.graylog2.enable) {
-    logger.add(require('winston-graylog2'), {
-        name: 'Chat',
-        handleExceptions: true,
-        graylog: {
-            //TODO: put the facility in config
-            facility: 'NodeJS Chat App',
-            servers: [{
-                host: config.logger.graylog2.host,
-                port: config.logger.graylog2.port
-            }]
+    winston.loggers.add('log2console', {
+        console: {
+            colorize: true,
+            timestamp: function () {
+                return moment().format("D MMM HH:MM:ss")
+            },
+            handleExceptions: true,
+            humanReadableUnhandledException: true
         }
     });
-    logger.info('Using graylog2');
+    log2console = winston.loggers.get('log2console');
+    if (config.logger.graylog2.enable) {
+        var WinstonGraylog2 = require('winston-graylog2');
+        winston.loggers.add('log2graylog', {
+            transports: [
+                new (WinstonGraylog2)({
+                    name: 'Chat',
+                    handleExceptions: true,
+                    graylog: {
+                        //TODO: put the facility in config
+                        facility: 'NodeJS Chat App',
+                        servers: [{
+                            host: config.logger.graylog2.host,
+                            port: config.logger.graylog2.port
+                        }]
+                    }
+                })
+            ]
+        });
+        log2graylog = winston.loggers.get('log2graylog');
+        log('info', 'Using graylog2', config.logger.graylog2);
+    }
+}
+
+function log(level, msg, meta) {
+    if (!config.logger.enable) {
+        return false;
+    }
+    if (!meta) {
+        meta = {};
+    }
+    if (log2console) {
+        log2console.log(level, msg, meta);
+    }
+    if (log2graylog) {
+        log2graylog.log(level, msg + ' ' + JSON.stringify(meta), meta);
+    }
 }
 
 exports.info = function (msg, meta) {
-    if (!config.logger.enable) {
-        return false;
-    }
-    if (!meta) {
-        meta = {};
-    }
-    logger.info(msg + JSON.stringify(meta), meta);
+    log('info', msg, meta);
 };
 
 exports.error = function (msg, meta) {
-    if (!config.logger.enable) {
-        return false;
-    }
-    if (!meta) {
-        meta = {};
-    }
-    logger.error(msg, meta);
+    log('error', msg, meta);
 };
