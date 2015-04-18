@@ -178,13 +178,14 @@ function handleChannelJoin (socket, user, channel) {
         });
         return false;
     }
+    /*//will not recreate the channel after server restart:
     if (!channelExists(channel.name)) {
         socketError(socket, {
             type: 'channel does not exist',
             text: 'Channel ' + channel.name + ' does not exist!'
         });
         return false;
-    }
+    }*/
     //TODO: remove this for multichannel support
     removeUserFromAllChannels(user);
     if (channels[channel.name] && channels[channel.name].password !== channel.password) {
