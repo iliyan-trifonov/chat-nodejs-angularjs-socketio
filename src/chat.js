@@ -40,7 +40,7 @@ function getMessages(channel) {
     if (messages[channel]) {
         result = messages[channel];
     }
-    log.info('getMessages('+channel+')', { result: result });
+    log.info('getMessages('+channel+')', { channelName: channel, result: result });
     return result;
 }
 
@@ -335,7 +335,7 @@ exports.init = function (socket) {
 
         socket.on('new message', function (message) {
             log.info('socket:new message', {
-                channel: message.channel,
+                channelName: message.channel,
                 user: message.user,
                 text: message.text
             });
@@ -343,12 +343,12 @@ exports.init = function (socket) {
         });
 
         socket.on('create user', function () {
-            log.info('socket: create user');
+            log.info('socket:create user');
             handleCreateUser(socket);
         });
 
         socket.on('known user', function (user) {
-            log.info('socket: known user', { user: user });
+            log.info('socket:known user', { user: user });
             handleKnownUser(socket, user);
         });
 
