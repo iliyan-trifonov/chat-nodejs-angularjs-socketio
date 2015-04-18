@@ -12,14 +12,16 @@ var messages = {};
 
 function formatMessage(username, text) {
     return {
-        text: moment().format('HH:mm:ss') +
+        //TODO: put the date format in config
+        text: moment().format('D MMM HH:mm:ss') +
         ' <strong>'+username+'</strong>: ' + text
     };
 }
 
 function formatChannelMessage(text) {
     return {
-        text: moment().format('HH:mm:ss') + ' ' + text
+        //TODO: put the date format in config
+        text: moment().format('D MMM HH:mm:ss') + ' ' + text
     };
 }
 
