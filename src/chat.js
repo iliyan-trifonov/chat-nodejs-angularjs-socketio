@@ -167,26 +167,7 @@ function handleChannelCreate (socket, channel) {
     }
     //TODO: remove this for multichannel support
     removeUserFromAllChannels(user);
-    socket.join(channel, function (err) {
-        if (err) {
-            socketError(socket, {
-                type: 'join channel err',
-                text: 'Could not join channel ' + channel + '! Error: ' + err
-            });
-            return false;
-        }
-        addChannel(channel);
-        socket.emit('joined channel', channel);
-        log.info('joined channel', channel);
-        //repeats with the join channel code below
-        addUserToChannel(user.uuid, channel.name);
-        sendMessageToChannel(channel.name, user.username + ' joined');
-        socket.emit('joined channel', channel);
-        log.info('joined channel', channel);
-        //send the new users list to all users in the channel
-        var users = getChannelUsers(channel.name);
-        io.to(channel.name).emit('channel users list', users);
-    });
+    joinChannel(socket, user, channel);
 }
 
 function handleChannelJoin (socket, user, channel) {
@@ -194,6 +175,13 @@ function handleChannelJoin (socket, user, channel) {
         socketError(socket, {
             type: 'join channel err',
             text: 'User or channel not set!'
+        });
+        return false;
+    }
+    if (!channelExists(channel.name)) {
+        socketError(socket, {
+            type: 'channel does not exist',
+            text: 'Channel ' + channel.name + ' does not exist!'
         });
         return false;
     }
@@ -206,6 +194,10 @@ function handleChannelJoin (socket, user, channel) {
         });
         return false;
     }
+    joinChannel(socket, user, channel);
+}
+
+function joinChannel (socket, user, channel) {
     socket.join(channel.name, function (err) {
         if (err) {
             socketError(socket, {
