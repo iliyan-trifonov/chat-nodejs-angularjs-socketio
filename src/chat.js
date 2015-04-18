@@ -98,6 +98,8 @@ function findUserBySocketId (socketId) {
 }
 
 function addChannel (channel) {
+    //TODO: check when it happens to have a channel with users already populated
+    log.info('Adding new channel', channel);
     channel.users = [];
     channels[channel.name] = channel;
 }
