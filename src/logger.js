@@ -35,16 +35,6 @@ if (config.logger.graylog2.enable) {
     logger.info('Using graylog2');
 }
 
-exports.log = function (msg, meta) {
-    if (!config.logger.enable) {
-        return false;
-    }
-    if (!meta) {
-        meta = {};
-    }
-    logger.log(msg, meta);
-};
-
 exports.info = function (msg, meta) {
     if (!config.logger.enable) {
         return false;
@@ -52,7 +42,7 @@ exports.info = function (msg, meta) {
     if (!meta) {
         meta = {};
     }
-    logger.info(msg, meta);
+    logger.info(msg + JSON.stringify(meta), meta);
 };
 
 exports.error = function (msg, meta) {
