@@ -98,7 +98,10 @@ function findUserBySocketId (socketId) {
 
 function addChannel (channel) {
     //TODO: check when it happens to have a channel with users already populated
-    log.info('Adding new channel', { channel: channel });
+    log.info('Adding new channel', {
+        channelName: channel.name,
+        channelPassword: channel.password
+    });
     channel.users = [];
     channels[channel.name] = channel;
 }
@@ -109,7 +112,7 @@ function getUserChannels (uuid) {
 
 function sendMessageToChannel (channelName, text) {
     var message = formatChannelMessage(text);
-    log.info('sending message', {text: message, channelName: channelName});
+    log.info('sending message', { channelName: channelName, text: message });
     io.to(channelName).emit(
         'new channel message',
         message
@@ -214,7 +217,11 @@ function joinChannel (socket, user, channel) {
         addUserToChannel(user.uuid, channel.name);
         sendMessageToChannel(channel.name, user.username + ' joined');
         socket.emit('joined channel', channel);
-        log.info('joined channel', { channel: channel });
+        log.info('joined channel', {
+            chanelName: channel.name,
+            channelPassword: channel.password,
+            users: channel.users
+        });
         //send the new users list to all users in the channel
         var users = getChannelUsers(channel.name);
         io.to(channel.name).emit('channel users list', users);
@@ -309,10 +316,10 @@ exports.init = function (socket) {
     io = socket;
 
     io.on('connection', function (socket) {
-        log.info('a user connected', { socketId: socket.id });
+        log.info('socket:connection', { socketId: socket.id });
 
         socket.on('disconnect', function(){
-            log.info('a user disconnected', { socketId: socket.id });
+            log.info('socket:disconnect', { socketId: socket.id });
             destroyUser(socket.id);
         });
 
@@ -322,12 +329,16 @@ exports.init = function (socket) {
         });
 
         socket.on('join channel', function (user, channel) {
-            log.info('socket:join channel', {user: user, channel: channel});
+            log.info('socket:join channel', { user: user, channel: channel });
             handleChannelJoin(socket, user, channel);
         });
 
         socket.on('new message', function (message) {
-            log.info('new message', { text: message });
+            log.info('socket:new message', {
+                channel: message.channel,
+                user: message.user,
+                text: message.text
+            });
             handleNewMessage(message);
         });
 
@@ -347,7 +358,7 @@ exports.init = function (socket) {
         });
 
         socket.on('leave channel', function (user, channel) {
-            log.info('leave channel', {user: user, channel: channel});
+            log.info('socket:leave channel', {user: user, channel: channel});
             handleLeaveChannel(socket, user, channel);
         });
 

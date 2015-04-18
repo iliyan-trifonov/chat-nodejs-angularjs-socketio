@@ -23,7 +23,9 @@ if (config.logger.graylog2.enable) {
     logger.add(require('winston-graylog2'), {
         name: 'Chat',
         handleExceptions: true,
+        json: true,
         graylog: {
+            //TODO: put the facility in config
             facility: 'NodeJS Chat App',
             servers: [{
                 host: config.logger.graylog2.host,
