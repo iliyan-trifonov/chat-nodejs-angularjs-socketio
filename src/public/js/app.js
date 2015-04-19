@@ -45,15 +45,7 @@
 
             //TODO: use MenuCtrl surrounding the top menu only, no rootScope
             $rootScope.Channel = Channel;
-            $rootScope.user = user.username;
-
-            //may be moved to the socket.on code
-            $rootScope.$on(
-                'user updated',
-                function (event, uuid, oldUsername, newUsername) {
-                    $rootScope.user = newUsername;
-                }
-            );
+            $rootScope.Storage = Storage;
 
             if (!user || !user.uuid) {
                 Storage.user.set({});
@@ -83,6 +75,7 @@
                 user = newUser;
                 Storage.user.set(user);
                 Storage.channel.set({});
+                $rootScope.$apply();
             });
 
             socket.on('channel users list', function (users) {

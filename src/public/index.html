@@ -42,8 +42,8 @@
                 <li><a ng-href="#/chat" ng-cloak ng-if="Channel.name.get()">Chat</a></li>
                 <li ng-cloak ng-if="isConnected"><a><span class="text-success">Connected</span></a></li>
             </ul>
-            <ul class="nav navbar-nav navbar-right" ng-cloak ng-if="user">
-                <li><a ng-href="#/profile">Welcome, {{user}}!</a></li>
+            <ul class="nav navbar-nav navbar-right" ng-cloak ng-if="Storage.user.get().username">
+                <li><a ng-href="#/profile">Welcome, {{Storage.user.get().username}}!</a></li>
             </ul>
         </div>
     </div>
