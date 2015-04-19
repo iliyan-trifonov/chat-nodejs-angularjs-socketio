@@ -49,3 +49,12 @@ NodeJs application handles only the sockets' communication.
 Socket.IO has a perfect fallback system which means if your server does not support web sockets, this application will
 still work no matter what. This is the case with my demo link above which is behind CloudFlare+Nginx reverse proxy+NodeJS.
 Soon CloudFlare will allow web sockets communication for all of their users.
+
+The browser's local storage which is available in all modern browsers is used to store your user and channel settings.
+On the back-end users, channels and messages are kept in arrays, not database but this can be changed to use for example
+Redis or MongoDB if the application is going to be used by many people at once.
+There is also a hard limit of 100 on messages which also can be changed in src/app.js.
+
+For the logging the app is using my logging module 
+[winston-console-graylog2-logger](https://github.com/iliyan-trifonov/winston-console-graylog2-logger ["winston-console-graylog2-logger"]). 
+It provides simultaneous logging to the console and to a Graylog2 server.
