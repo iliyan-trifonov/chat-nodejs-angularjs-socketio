@@ -3,13 +3,14 @@
 var hat = require('hat'),
     moment = require('moment'),
     io,
+    config = require('./config.json'),
     Logger = require('winston-console-graylog2-logger'),
     log = new Logger({
-        enable: true,
+        enable: config.logger.enable,
         graylog2: {
-            enable: true,
-            host: "127.0.0.1",
-            port: "12201"
+            enable: config.logger.graylog2.enable,
+            host: config.logger.graylog2.host,
+            port: config.logger.graylog2.port
         }
     });
 
