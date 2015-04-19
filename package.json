@@ -1,6 +1,6 @@
 {
   "name": "chat-nodejs-angularjs-socketio",
-  "description": "Chat app",
+  "description": "Chat application built with NodeJS, AngularJS and Socket.io",
   "private": true,
   "homepage": "http://chat.iliyan-trifonov.com",
   "author": {
