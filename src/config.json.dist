@@ -4,7 +4,8 @@
         "graylog2": {
             "enable": false,
             "host": "127.0.0.1",
-            "port": "12201"
+            "port": "12201",
+            "facility": "My NodeJS App"
         }
     }
 }
