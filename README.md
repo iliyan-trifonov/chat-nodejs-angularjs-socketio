@@ -11,6 +11,9 @@ Install the required NodeJS and Bower modules:
     npm install
     bower install
 
+Copy src/config.json.dist to src/config.json and change it if needed. By default the settings in config.json will allow
+console logging.
+
 ## Usage
 
 Go to the project's root dir and run:
