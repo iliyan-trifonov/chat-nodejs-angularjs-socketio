@@ -1,6 +1,5 @@
 {
   "name": "chat-nodejs-angularjs-socketio",
-  "version": "1.0.0",
   "private": true,
   "ignore": [
     "**/.*",
