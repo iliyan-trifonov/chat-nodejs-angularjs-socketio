@@ -10,7 +10,8 @@ var hat = require('hat'),
         graylog2: {
             enable: config.logger.graylog2.enable,
             host: config.logger.graylog2.host,
-            port: config.logger.graylog2.port
+            port: config.logger.graylog2.port,
+            facility: "NodeJS Chat App"
         }
     });
 
