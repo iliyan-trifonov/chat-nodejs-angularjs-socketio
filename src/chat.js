@@ -2,8 +2,16 @@
 
 var hat = require('hat'),
     moment = require('moment'),
-    log = require('./logger'),
-    io;
+    io,
+    Logger = require('winston-console-graylog2-logger'),
+    log = new Logger({
+        enable: true,
+        graylog2: {
+            enable: true,
+            host: "127.0.0.1",
+            port: "12201"
+        }
+    });
 
 var channels = {};
 var clients = {};
