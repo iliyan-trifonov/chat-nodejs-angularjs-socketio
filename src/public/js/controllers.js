@@ -48,6 +48,7 @@
         '$scope', 'Channel', 'Chat', '$location', 'Storage', 'ChatSocket',
         function ($scope, Channel, Chat, $location, Storage, ChatSocket) {
 
+            //TODO: put it in a directive
             setTimeout(function () {
                 angular.element(
                     document.querySelector('#messageinput')
@@ -55,6 +56,8 @@
             });
 
             var user = Storage.user.get();
+
+            //TODO: put it in a directive
             var chatContents = angular.element(
                 document.querySelector('.chat_contents')
             );
@@ -79,12 +82,14 @@
             /*}*/
 
             $scope.sendMessage = function () {
-                socket.emit('new message', {
-                    channel: $scope.channel,
-                    user: user.username,
-                    text: $scope.message
-                });
-                delete $scope.message;
+                if ($scope.message) {
+                    socket.emit('new message', {
+                        channel: $scope.channel,
+                        user: user.username,
+                        text: $scope.message
+                    });
+                    delete $scope.message;
+                }
             };
 
             $scope.messageKeyPressed = function (event) {
@@ -93,7 +98,7 @@
                 }
             };
 
-            //TODO: move it to a directive
+            //TODO: put it in a directive
             function scrollChatText() {
                 chatContents.scrollTop(chatContents[0].scrollHeight);
             }
