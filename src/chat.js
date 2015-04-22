@@ -42,7 +42,7 @@ function addMessage(channel, text) {
     }
     messages[channel].push(text);
     if (messages[channel].length > 100) {
-        messages[channel].splice(0, 1);
+        messages[channel].shift();
     }
     //log.info('messages for ' + channel, messages[channel]);
 }
