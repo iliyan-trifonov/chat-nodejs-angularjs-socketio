@@ -1,6 +1,7 @@
 'use strict';
 
-var express = require('express'),
+var config = require('./config.json'),
+    express = require('express'),
     app = express(),
     http = require('http').Server(app),
     io = require('socket.io')(http),
@@ -15,4 +16,4 @@ http.listen(3000, function () {
     console.info('Chat App listening on *:3000');
 });
 
-Chat.init(io);
+Chat.init(config, io);

@@ -3,17 +3,9 @@
 var hat = require('hat'),
     moment = require('moment'),
     io,
-    config = require('./config.json'),
+    config,
     Logger = require('winston-console-graylog2-logger'),
-    log = new Logger({
-        enable: config.logger.enable,
-        graylog2: {
-            enable: config.logger.graylog2.enable,
-            host: config.logger.graylog2.host,
-            port: config.logger.graylog2.port,
-            facility: config.logger.graylog2.facility
-        }
-    });
+    log;
 
 var channels = {};
 var clients = {};
@@ -41,7 +33,7 @@ function addMessage(channel, text) {
         messages[channel] = [];
     }
     messages[channel].push(text);
-    if (messages[channel].length > 100) {
+    if (messages[channel].length > config.chat.messages_limit) {
         messages[channel].shift();
     }
     //log.info('messages for ' + channel, messages[channel]);
@@ -324,8 +316,20 @@ function handleGetMessages (socket, channel) {
     socket.emit('channel messages', messages);
 }
 
-exports.init = function (socket) {
+exports.init = function (cnf, socket) {
+    config = cnf;
+
     io = socket;
+
+    log = new Logger({
+        enable: config.logger.enable,
+        graylog2: {
+            enable: config.logger.graylog2.enable,
+            host: config.logger.graylog2.host,
+            port: config.logger.graylog2.port,
+            facility: config.logger.graylog2.facility
+        }
+    });
 
     io.on('connection', function (socket) {
         log.info('socket:connection', { socketId: socket.id });
