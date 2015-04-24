@@ -317,7 +317,8 @@ function handleGetMessages (socket, channel) {
 }
 
 exports.init = function (cnf, socket, logger) {
-    config = cnf;
+    config = cnf || {};
+    config.chat = config.chat || {};
 
     log = logger;
 

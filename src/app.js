@@ -17,7 +17,9 @@ http.listen(3000, function () {
     console.info('Chat App listening on *:3000');
 });
 
-var graylog2Cnf = config.logger.graylog2;
+config.logger = config.logger || {};
+
+var graylog2Cnf = config.logger.graylog2 || {};
 
 graylog2Cnf.enable = graylog2Cnf.enable || false;
 graylog2Cnf.host = graylog2Cnf.host || '127.0.0.1';
