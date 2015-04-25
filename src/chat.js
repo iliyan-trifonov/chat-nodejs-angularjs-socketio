@@ -79,7 +79,6 @@ function removeUserFromChannel (socket, uuid, channelName, done) {
         var index = channels[channelName].users.indexOf(uuid);
         channels[channelName].users.splice(index, 1);
         var user = clients[uuid];
-        log.info('user from clients uuid', user);
         index = user.channels.indexOf(channelName);
         user.channels.splice(index, 1);
         //socket.emit('channel left', channelName);
@@ -156,6 +155,9 @@ function removeUserFromAllChannels (socket, user, done) {
             }
             //repeats with the same message from handleChannelLeave()
             sendMessageToChannel(channel, user.username + ' left');
+            //send the new users list to all users in the channel
+            var users = getChannelUsers(channel);
+            io.to(channel).emit('channel users list', users);
             counter--;
             if (counter === 0) {
                 return done();
