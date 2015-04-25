@@ -1,7 +1,5 @@
 # chat-nodejs-angularjs-socketio
 
-===
-
 [![Dependency Status](https://www.versioneye.com/user/projects/553a42d21d2989bdd50000a4/badge.svg?style=flat)](https://www.versioneye.com/user/projects/553a42d21d2989bdd50000a4)
 [![Dependency Status](https://www.versioneye.com/user/projects/553a42ce1d2989f7ee0000db/badge.svg?style=flat)](https://www.versioneye.com/user/projects/553a42ce1d2989f7ee0000db)
 
