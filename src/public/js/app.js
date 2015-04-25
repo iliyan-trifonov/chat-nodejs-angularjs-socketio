@@ -32,6 +32,10 @@
                 controller: 'ChatCtrl'
             })
 
+            .when('/join/:channel/:pass?', {
+                controller: 'ChatCtrl',
+                template: " "
+            })
 
             .otherwise({redirectTo: '/'});
     }])

@@ -74,7 +74,42 @@
                     ).focus();
                 });
             }
+
+            function joinChatUrl () {
+                var channel = $routeParams.channel;
+                var pass = $routeParams.pass || '';
+
+                $log.info('joining channel = "' + channel + '", pass = "' + pass + '"');
+
+                //the same function as in the ChannelCtrl
+                function joinChannel (channel, pass, user) {
+                    //redirect from /join to /chat
+                    $location.path('/chat');
+                    socket.emit('join channel', user, {
+                        name: channel,
+                        password: pass
+                    });
                 }
+
+                if (!channel) {
+                    $log.info('No valid channel specified, redirecting to /');
+                    $location.path('/');
+                } else {
+                    if (!user || !user.uuid) {
+                        $log.info('Waiting for the user to be created');
+                        $scope.$on('user created', function (event, user) {
+                            joinChannel(channel, pass, user);
+                        });
+                    } else {
+                        joinChannel(channel, pass, user);
+                    }
+                }
+            }
+
+            if (/^\/join\/.+/.test($location.path())) {
+                $log.info('ChatCtrl: join chat url detected', $location.path());
+                joinChatUrl();
+            }
 
             $scope.sendMessage = function () {
                 if ($scope.message) {
