@@ -131,10 +131,12 @@
 
             $scope.sendMessage = function () {
                 if ($scope.message) {
+                    var msg = parseUrl($scope.message);
+                    $log.info('new msg', msg);
                     socket.emit('new message', {
                         channel: $scope.channel,
                         user: user.username,
-                        text: $scope.message
+                        text: msg
                     });
                     delete $scope.message;
                 }
