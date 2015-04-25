@@ -78,7 +78,6 @@
                     $timeout.cancel(copiedLinkTimeout);
                     copiedLinkTimeout = $timeout(function () {
                         $scope.textCopied = false;
-                        console.log('textCopied set to false');
                     }, 1E3);
                 });
                 return $scope.inviteLink.url;
