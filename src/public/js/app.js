@@ -198,7 +198,7 @@
     ])
 
     .value('parseUrl', function (text) {
-        var urlPattern = /(<a href=")?(?:https?:\/\/)?(?:\w+\.)+\w+/gi;
+        var urlPattern = /(<a.*?href[^=]*=[^"']*["']+)?(?:https?:\/\/)(?:[^\ \s"']+)/gi;
         return text.replace( urlPattern, function ( $0, $1 ) {
             return $1 ? $0 : '<a href="' + (/http/.test($0) ? $0 : 'http://' + $0) + '" target="_blank">' + $0 + '</a>';
         });
