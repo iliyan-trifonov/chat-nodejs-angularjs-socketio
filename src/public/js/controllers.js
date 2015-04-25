@@ -124,25 +124,27 @@
                 });
             });
 
+            function showText () {
+                //TODO: check if $apply() is needed here
+                $scope.$apply(function () {
+                    $scope.chatText = Chat.getText();
+                    //TODO: check if $timeout() is needed here
+                    $timeout(function () {
+                        scrollChatText();
+                    });
+                });
+            }
 
             //TODO: directive for html adding - dom manipulation
             //TODO: use the same body for user and channel message with
             //TODO: one flag: message.channel = true/false
             $scope.$on('new channel message', function (event, message) {
-                //TODO: check if $apply() is needed here
-                $scope.$apply(function () {
-                    $scope.text = Chat.getText();
-                });
-                scrollChatText();
+                showText();
             });
 
             //TODO: directive for html adding
             $scope.$on('new message', function (event, message) {
-                //TODO: check if $apply() is needed here
-                $scope.$apply(function () {
-                    $scope.text = Chat.getText();
-                });
-                scrollChatText();
+                showText();
             });
 
             //TODO: rename to left channel
@@ -155,12 +157,7 @@
 
             $scope.$on('channel messages', function (event, messages) {
                 Chat.replaceText(messages);
-                $scope.$apply(function () {
-                    $scope.text = Chat.getText();
-                    setTimeout(function () {
-                        scrollChatText();
-                    });
-                });
+                showText();
             });
 
         }
