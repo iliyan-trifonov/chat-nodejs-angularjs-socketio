@@ -20,17 +20,25 @@
                 password: ''
             };
 
+            //TODO: add a loading indicator until the channel is joined and page changed or error is returned
+
             $scope.createChannel = function () {
-                socket.emit('create channel', {
-                    name: $scope.channel.name,
-                    password: $scope.channel.password
+                $location.path('/chat');
+                $timeout(function () {
+                    socket.emit('create channel', {
+                        name: $scope.channel.name,
+                        password: $scope.channel.password
+                    });
                 });
             };
 
             $scope.joinChannel = function () {
-                socket.emit('join channel', user, {
-                    name: $scope.channel.name,
-                    password: $scope.channel.password
+                $location.path('/chat');
+                $timeout(function () {
+                    socket.emit('join channel', user, {
+                        name: $scope.channel.name,
+                        password: $scope.channel.password
+                    });
                 });
             };
         }
