@@ -6,7 +6,8 @@
         'Chat.services',
         'ngRoute',
         'ngSanitize',
-        'ui.bootstrap'
+        'ui.bootstrap',
+        'ngClipboard'
     ])
 
     .config(['$routeProvider', function ($routeProvider) {

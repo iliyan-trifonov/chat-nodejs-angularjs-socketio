@@ -38,6 +38,21 @@ body {
     width: 100%;
 }
 
+.text-copied {
+    -webkit-animation: copied-anim 1s;
+    animation: copied-anim 1s;
+    opacity: 0;
+}
+
+@-webkit-keyframes copied-anim {
+    50%   { opacity: 1 }
+    100% { opacity: 0 }
+}
+@keyframes copied-anim {
+    50%   { opacity: 1 }
+    100% { opacity: 0 }
+}
+
 /*#footer {
     position: absolute;
     bottom: 0;

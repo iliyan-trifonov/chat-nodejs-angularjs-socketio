@@ -60,11 +60,29 @@
 
             if (channel && channel.name) {
                 $scope.channel = channel.name;
+                $scope.inviteLink = Chat.getInviteLink(channel);
             }
 
             $scope.users = [];
 
+            var copiedLinkTimeout;
 
+            $scope.copyInviteLink = function () {
+                //hide the text if still animated
+                $scope.$apply(function () {
+                    $scope.textCopied = false;
+                });
+                //show the text
+                $scope.$apply(function () {
+                    $scope.textCopied = true;
+                    $timeout.cancel(copiedLinkTimeout);
+                    copiedLinkTimeout = $timeout(function () {
+                        $scope.textCopied = false;
+                        console.log('textCopied set to false');
+                    }, 1E3);
+                });
+                return $scope.inviteLink.url;
+            };
 
             //TODO: put it in a directive
             function focusMessageInput () {
@@ -148,6 +166,9 @@
 
             $scope.$on('joined channel', function (event, channel) {
                 $scope.channel = channel.name;
+                $scope.inviteLink = Chat.getInviteLink(channel);
+                //the back-end sends the users list to all users in the channel:
+                //ChatSocket.channel.getUsers($scope.channel);
                 ChatSocket.channel.getMessages($scope.channel);
                 focusMessageInput();
             });

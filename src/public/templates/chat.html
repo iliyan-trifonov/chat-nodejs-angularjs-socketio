@@ -9,6 +9,11 @@
                         ng-click="leaveChannel()">Leave
                 </button>
             </h2>
+            <small ng-if="inviteLink">
+                Copy this link to invite your friends:
+                <a href="javascript:void(0)" clip-copy="copyInviteLink()" ng-bind="inviteLink.text"></a>
+            </small>
+            <small class="text-success text-copied" ng-cloak ng-if="textCopied">Copied!</small>
         </div>
 
         <div class="row">

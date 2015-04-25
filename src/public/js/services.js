@@ -36,7 +36,8 @@
     ])
 
     .factory('Chat', [
-        function () {
+        '$location',
+        function ($location) {
             var text = [];
             return {
                 getText: function() {
@@ -47,6 +48,20 @@
                 },
                 replaceText: function (newText) {
                     text = newText;
+                },
+                getInviteLink: function (channel) {
+                    var url = $location.protocol() +
+                        '://' +
+                        $location.host() +
+                        ':' +
+                        $location.port() +
+                        '/#/join/' +
+                        channel.name;
+                    return {
+                        url: url +
+                            (channel.password ? '/' + channel.password : ''),
+                        text: url + (channel.password ? '/***' : '')
+                    };
                 }
             };
         }
@@ -82,7 +97,7 @@
                         $window.localStorage.setItem('channel', JSON.stringify(channel));
                     }
                 }
-            }
+            };
         }
     ])
 
