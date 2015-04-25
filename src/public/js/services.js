@@ -35,26 +35,6 @@
         }
     ])
 
-    .factory('Channel', [
-        function () {
-            var name = '';
-            return {
-                name: {
-                    get: function() {
-                        return name;
-                    },
-                    set: function(newName) {
-                        //$log.info('Channel: setting new name', newName);
-                        name = newName;
-                    }
-                },
-                getUsers: function(channel) {
-                    socket.emit('get channel users list', channel);
-                }
-            }
-        }
-    ])
-
     .factory('Chat', [
         function () {
             var text = [];
@@ -66,10 +46,9 @@
                     text.push(newText);
                 },
                 replaceText: function (newText) {
-                    //$log.info('Chat.replaceText() called', newText);
                     text = newText;
                 }
-            }
+            };
         }
     ])
 

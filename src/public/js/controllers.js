@@ -10,8 +10,8 @@
     ])
 
     .controller('ChannelCtrl', [
-        '$scope', '$location', 'Channel', 'Storage',
-        function ($scope, $location, Channel, Storage) {
+        '$scope', '$location', 'Storage', '$timeout',
+        function ($scope, $location, Storage, $timeout) {
 
             var user = Storage.user.get();
 
@@ -33,20 +33,12 @@
                     password: $scope.channel.password
                 });
             };
-
-            $scope.$on('joined channel', function (event, channel) {
-                Channel.name.set(channel.name);
-                Storage.channel.set(channel);
-                //$scope.$apply(function () {
-                    $location.path('/chat');
-                //});
-            });
         }
     ])
 
     .controller('ChatCtrl', [
-        '$scope', 'Channel', 'Chat', '$location', 'Storage', 'ChatSocket',
-        function ($scope, Channel, Chat, $location, Storage, ChatSocket) {
+        '$scope', 'Chat', '$location', 'Storage', 'ChatSocket', '$routeParams', '$log', 'parseUrl', '$timeout',
+        function ($scope, Chat, $location, Storage, ChatSocket, $routeParams, $log, parseUrl, $timeout) {
 
             //TODO: put it in a directive
             setTimeout(function () {
@@ -56,30 +48,23 @@
             });
 
             var user = Storage.user.get();
+            var channel = Storage.channel.get();
 
             //TODO: put it in a directive
             var chatContents = angular.element(
                 document.querySelector('.chat_contents')
             );
 
-            $scope.channel = Channel.name.get();
+            if (channel && channel.name) {
+                $scope.channel = channel.name;
+            }
 
             $scope.users = [];
 
-            if ($scope.channel) {
-                Channel.getUsers($scope.channel);
-            }
 
-            /*$scope.text = Chat.getText();
-            if ($scope.text.length > 0) {
-                setTimeout(function () {
-                    scrollChatText();
+
                 });
-            } else {*/
-                if ($scope.channel) {
-                    ChatSocket.channel.getMessages($scope.channel);
                 }
-            /*}*/
 
             $scope.sendMessage = function () {
                 if ($scope.message) {
@@ -117,11 +102,7 @@
             ///socket messages
 
             $scope.$on('joined channel', function (event, channel) {
-                //$scope.$apply(function () {
-                    $scope.channel = channel.name;
-                //});
-                Channel.name.set(channel.name);
-                Channel.getUsers($scope.channel);
+                $scope.channel = channel.name;
                 ChatSocket.channel.getMessages($scope.channel);
                 setTimeout(function () {
                     angular.element(
@@ -136,6 +117,7 @@
                     $scope.users = users;
                 });
             });
+
 
             //TODO: directive for html adding - dom manipulation
             //TODO: use the same body for user and channel message with
@@ -159,9 +141,7 @@
 
             //TODO: rename to left channel
             $scope.$on('channel left', function (event, channel) {
-                Channel.name.set('');
                 Storage.channel.set({});
-                //TODO: check if $apply() is needed here
                 //$scope.$apply(function () {
                     $location.path('/');
                 //});
