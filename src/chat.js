@@ -384,6 +384,11 @@ exports.init = function (cnf, socket, logger) {
             handleChannelJoin(socket, user, channel);
         });
 
+        socket.on('leave channel', function (user, channel) {
+            log.info('socket:leave channel', {user: user, channel: channel});
+            handleLeaveChannel(socket, user, channel);
+        });
+
         socket.on('new message', function (message) {
             log.info('socket:new message', {
                 channelName: message.channel,
@@ -406,11 +411,6 @@ exports.init = function (cnf, socket, logger) {
         socket.on('get channel users list', function (channel) {
             log.info('socket:get channel users list', { channelName: channel });
             handleGetChannelUsersList(socket, channel);
-        });
-
-        socket.on('leave channel', function (user, channel) {
-            log.info('socket:leave channel', {user: user, channel: channel});
-            handleLeaveChannel(socket, user, channel);
         });
 
         socket.on('update user', function (uuid, newUsername) {
