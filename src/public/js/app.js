@@ -37,8 +37,8 @@
     }])
 
     .run([
-        'Channel', '$location', '$rootScope', 'Storage', 'Chat', '$log', '$modal', '$modalStack', 'ChatSocket',
-        function (Channel, $location, $rootScope, Storage, Chat, $log, $modal, $modalStack, ChatSocket) {
+        '$location', '$rootScope', 'Storage', 'Chat', '$log', '$modal', '$modalStack', 'ChatSocket',
+        function ($location, $rootScope, Storage, Chat, $log, $modal, $modalStack, ChatSocket) {
 
             $log.info('App run()');
 
