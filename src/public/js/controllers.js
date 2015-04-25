@@ -207,7 +207,7 @@
             $scope.$on('channel left', function (event, channel) {
                 Storage.channel.set({});
                 //$scope.$apply(function () {
-                    $location.path('/');
+                    $location.path('/channel');
                 //});
             });
 
