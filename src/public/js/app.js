@@ -32,6 +32,7 @@
                 controller: 'ChatCtrl'
             })
 
+
             .otherwise({redirectTo: '/'});
     }])
 
@@ -39,12 +40,13 @@
         'Channel', '$location', '$rootScope', 'Storage', 'Chat', '$log', '$modal', '$modalStack', 'ChatSocket',
         function (Channel, $location, $rootScope, Storage, Chat, $log, $modal, $modalStack, ChatSocket) {
 
+            $log.info('App run()');
+
             var user = Storage.user.get();
             var channel = Storage.channel.get();
             var disconnectedBefore = false;
 
             //TODO: use MenuCtrl surrounding the top menu only, no rootScope
-            $rootScope.Channel = Channel;
             $rootScope.Storage = Storage;
 
             if (!user || !user.uuid) {
