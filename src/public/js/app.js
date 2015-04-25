@@ -1,4 +1,4 @@
-(function (angular) {
+(function (angular, socket) {
     'use strict';
 
     angular.module('Chat', [
@@ -186,4 +186,4 @@
 
     ;
 
-})(angular);
+})(angular, socket);

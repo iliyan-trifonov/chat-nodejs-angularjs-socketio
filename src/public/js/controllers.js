@@ -1,4 +1,4 @@
-(function (angular) {
+(function (angular, socket) {
     'use strict';
 
     angular.module('Chat.controllers', [])
@@ -219,4 +219,4 @@
 
     ;
 
-})(angular);
+})(angular, socket);
