@@ -63,10 +63,13 @@
 
             ///socket messages
 
-            //TODO: socket error messages to handle
+            //TODO: socket connect error messages to handle
+            //TODO: move the socket init to a service or a main Ctrl
 
             socket.on('joined channel', function (channel) {
                 $log.info('socket:joined channel', channel);
+                Storage.channel.set(channel);
+                //$location.path('/chat');
                 $rootScope.$apply(function () {
                     $rootScope.$broadcast('joined channel', channel);
                 });
@@ -77,7 +80,9 @@
                 user = newUser;
                 Storage.user.set(user);
                 Storage.channel.set({});
-                $rootScope.$apply();
+                $rootScope.$apply(function () {
+                    $rootScope.$broadcast('user created', user);
+                });
             });
 
             socket.on('channel users list', function (users) {
@@ -141,6 +146,9 @@
             $rootScope.isConnected = false;
             socket.on('connect', function () {
                 $log.info('socket:connect');
+                $rootScope.$apply(function () {
+                    $rootScope.isConnected = true;
+                });
                 //reconnect to the user's channel
                 if (disconnectedBefore) {
                     disconnectedBefore = false;
@@ -148,21 +156,19 @@
                     var user = Storage.user.get();
                     var channel = Storage.channel.get();
                     if (channel && channel.name && user) {
+                        $log.info('reconnecting after disconnect');
                         $location.path('/chat');
                         ChatSocket.user.known(user);
                         ChatSocket.channel.join(user, channel);
                     }
                 }
-                $rootScope.$apply(function () {
-                    $rootScope.isConnected = true;
-                });
             });
             socket.on('disconnect', function () {
                 $log.info('socket:disconnect');
-                disconnectedBefore = true;
                 $rootScope.$apply(function () {
                     $rootScope.isConnected = false;
                 });
+                disconnectedBefore = true;
                 $modalStack.dismissAll();
                 $modal.open({
                     templateUrl: 'myModalContent.html',
