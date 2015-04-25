@@ -283,7 +283,10 @@ function handleCreateUser (socket) {
     };
     addUser(user);
     log.info('created new user', { user: clients[uuid] });
-    socket.emit('user created', clients[uuid]);
+    socket.emit('user created', {
+        uuid: uuid,
+        username: clients[uuid].username
+    });
 }
 
 function handleKnownUser (socket, user) {
