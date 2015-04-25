@@ -67,33 +67,42 @@ function addUserToChannel (uuid, channelName) {
     clients[uuid].channels.push(channelName);
 }
 
-function removeUserFromChannel (uuid, channelName) {
-    var index = channels[channelName].users.indexOf(uuid);
-    channels[channelName].users.splice(index, 1);
-    var user = clients[uuid];
-    index = user.channels.indexOf(channelName);
-    user.channels.splice(index, 1);
+function removeUserFromChannel (socket, uuid, channelName, done) {
+    socket.leave(channelName, function (err) {
+        if (err) {
+            socketError(socket, {
+                type: 'leave channel err',
+                text: 'Could not leave channel ' + channelName + '! Error: ' + err
+            });
+            return done(err);
+        }
+        var index = channels[channelName].users.indexOf(uuid);
+        channels[channelName].users.splice(index, 1);
+        var user = clients[uuid];
+        log.info('user from clients uuid', user);
+        index = user.channels.indexOf(channelName);
+        user.channels.splice(index, 1);
+        //socket.emit('channel left', channelName);
+        return done();
+    });
 }
 
-function destroyUser (socketId) {
-    if (!socketId) {
+function destroyUser (socket) {
+    if (!socket.id) {
         return false;
     }
-    var user = findUserBySocketId(socketId);
+    var user = findUserBySocketId(socket.id);
     if (!user || !user.uuid) {
         return false;
     }
-    var channels = getUserChannels(user.uuid);
 
-    channels.forEach(function (channelName) {
-        removeUserFromChannel(user.uuid, channelName);
-        sendMessageToChannel(channelName, user.username + ' left');
-        //send the new users list to all users in the channel
-        var users = getChannelUsers(channelName);
-        io.to(channelName).emit('channel users list', users);
+    removeUserFromAllChannels(socket, user, function (err) {
+        if (err) {
+            //...
+            return false;
+        }
+        removeUser(user);
     });
-
-    removeUser(user);
 }
 
 function findUserBySocketId (socketId) {
@@ -134,11 +143,24 @@ function socketError (socket, error) {
     log.error('chat error', error);
 }
 
-function removeUserFromAllChannels (user) {
+function removeUserFromAllChannels (socket, user, done) {
     var channels = getUserChannels(user.uuid);
+    var counter = channels.length;
+    if (counter === 0) {
+        return done();
+    }
     channels.forEach(function (channel) {
-        removeUserFromChannel(user.uuid, channel);
-        sendMessageToChannel(channel, user.username + ' left');
+        removeUserFromChannel(socket, user.uuid, channel, function (err) {
+            if (err) {
+                return done(err);
+            }
+            //repeats with the same message from handleChannelLeave()
+            sendMessageToChannel(channel, user.username + ' left');
+            counter--;
+            if (counter === 0) {
+                return done();
+            }
+        });
     });
 }
 
@@ -174,8 +196,13 @@ function handleChannelCreate (socket, channel) {
         return false;
     }
     //TODO: remove this for multichannel support
-    removeUserFromAllChannels(user);
-    joinChannel(socket, user, channel);
+    removeUserFromAllChannels(socket, user, function (err) {
+        if (err) {
+            //...
+            return false;
+        }
+        joinChannel(socket, user, channel);
+    });
 }
 
 function handleChannelJoin (socket, user, channel) {
@@ -194,8 +221,6 @@ function handleChannelJoin (socket, user, channel) {
         });
         return false;
     }*/
-    //TODO: remove this for multichannel support
-    removeUserFromAllChannels(user);
     if (channels[channel.name] && channels[channel.name].password !== channel.password) {
         socketError(socket, {
             type: 'join channel err',
@@ -203,7 +228,14 @@ function handleChannelJoin (socket, user, channel) {
         });
         return false;
     }
-    joinChannel(socket, user, channel);
+    //TODO: remove this for multichannel support
+    removeUserFromAllChannels(socket, user, function (err) {
+        if (err) {
+            //...
+            return false;
+        }
+        joinChannel(socket, user, channel);
+    });
 }
 
 function joinChannel (socket, user, channel) {
@@ -282,22 +314,27 @@ function handleGetChannelUsersList (socket, channel) {
     socket.emit('channel users list', users);
 }
 
-function handleLeaveChannel (socket, user, channel) {
-    socket.leave(channel, function (err) {
+function handleLeaveChannel (socket, user, channelName) {
+    socket.leave(channelName, function (err) {
         if (err) {
             socketError(socket, {
                 type: 'leave channel err',
-                text: 'Could not leave channel ' + channel + '! Error: ' + err
+                text: 'Could not leave channel ' + channelName + '! Error: ' + err
             });
             return false;
         }
-        removeUserFromChannel(user.uuid, channel);
-        sendMessageToChannel(channel, user.username + ' left');
-        log.info('channel left', { channelName: channel });
-        socket.emit('channel left', channel);
-        //send the new users list to all users in the channel
-        var users = getChannelUsers(channel);
-        io.to(channel).emit('channel users list', users);
+        removeUserFromChannel(socket, user.uuid, channelName, function (err) {
+            if (err) {
+                //...
+                return false;
+            }
+            socket.emit('channel left', channelName);
+            sendMessageToChannel(channelName, user.username + ' left');
+            //send the new users list to all users in the channel
+            var users = getChannelUsers(channelName);
+            io.to(channelName).emit('channel users list', users);
+            log.info('channel left', { channelName: channelName });
+        });
     });
 }
 
@@ -331,7 +368,7 @@ exports.init = function (cnf, socket, logger) {
 
         socket.on('disconnect', function(){
             log.info('socket:disconnect', { socketId: socket.id });
-            destroyUser(socket.id);
+            destroyUser(socket);
         });
 
         socket.on('create channel', function (channel) {
