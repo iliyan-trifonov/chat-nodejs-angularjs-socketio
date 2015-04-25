@@ -48,12 +48,7 @@
         '$scope', 'Chat', '$location', 'Storage', 'ChatSocket', '$routeParams', '$log', 'parseUrl', '$timeout',
         function ($scope, Chat, $location, Storage, ChatSocket, $routeParams, $log, parseUrl, $timeout) {
 
-            //TODO: put it in a directive
-            setTimeout(function () {
-                angular.element(
-                    document.querySelector('#messageinput')
-                ).focus();
-            });
+            focusMessageInput();
 
             var user = Storage.user.get();
             var channel = Storage.channel.get();
@@ -71,7 +66,14 @@
 
 
 
+            //TODO: put it in a directive
+            function focusMessageInput () {
+                $timeout(function () {
+                    angular.element(
+                        document.querySelector('#messageinput')
+                    ).focus();
                 });
+            }
                 }
 
             $scope.sendMessage = function () {
@@ -112,11 +114,7 @@
             $scope.$on('joined channel', function (event, channel) {
                 $scope.channel = channel.name;
                 ChatSocket.channel.getMessages($scope.channel);
-                setTimeout(function () {
-                    angular.element(
-                        document.querySelector('#messageinput')
-                    ).focus();
-                });
+                focusMessageInput();
             });
 
             $scope.$on('channel users list', function (event, users) {
