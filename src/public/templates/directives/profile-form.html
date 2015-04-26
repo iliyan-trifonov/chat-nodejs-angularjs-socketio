@@ -1,0 +1,17 @@
+<div class="row">
+    <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text"
+               id="username"
+               class="form-control"
+               autofocus
+               placeholder="Username"
+               ng-model="username"/>
+    </div>
+</div>
+<div class="row">
+    <button class="btn btn-block btn-primary"
+            ng-disabled="!username"
+            ng-click="updateUsername()"
+            >Update</button>
+</div>

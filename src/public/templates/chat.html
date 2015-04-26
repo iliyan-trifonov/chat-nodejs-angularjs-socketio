@@ -2,50 +2,26 @@
     <div class="col-md-12">
 
         <div class="page-header">
-            <h2>
-                Channel #{{channel}}
-                <button class="btn btn-sm btn-primary"
-                        ng-disabled="!channel"
-                        ng-click="leaveChannel()">Leave
-                </button>
-            </h2>
-            <small ng-if="inviteLink">
-                Click on this link to copy it and give it to your friends:
-                <a href="javascript:void(0)" clip-copy="copyInviteLink()" ng-bind="inviteLink.text"></a>
-            </small>
-            <small class="text-success text-copied" ng-cloak ng-if="textCopied">Copied!</small>
+            <chat-title
+                user="user"
+                channel="channel"
+                invite-link="inviteLink"
+                leave-channel="leaveChannel()">
+            </chat-title>
         </div>
 
         <div class="row">
-            <div class="col-md-10 chattext">
-                <div class="chat_container">
-                    <div class="chat_contents" ng-bind-html="chatText"></div>
-                </div>
-            </div>
-            <div class="col-md-2 chatusers text-center hidden-sm hidden-xs">
-                <span ng-if="users"><strong>Users:</strong></span><br/>
-                <span ng-repeat="user in users | orderBy: 'user'">{{user}}<br/></span>
-            </div>
+            <chat-text chat-text="chatText"></chat-text>
+            <chat-users users="users"></chat-users>
         </div>
 
         <div class="row">
-            <div class="input-group">
-                <input id="messageinput"
-                       type="text"
-                       class="form-control"
-                       autofocus
-                       ng-model="message"
-                       ng-disabled="!channel"
-                       ng-keypress="messageKeyPressed($event)"/>
-            <span class="input-group-btn">
-                <button class="btn btn-primary"
-                        ng-disabled="!channel"
-                        ng-click="sendMessage()">Send
-                </button>
-            </span>
-            </div>
+            <chat-message
+                channel="channel"
+                username="user.username"
+                focus-send-message="focusSendMessage">
+            </chat-message>
         </div>
 
     </div>
-
 </div>

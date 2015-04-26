@@ -36,8 +36,8 @@
     ])
 
     .factory('Chat', [
-        '$location',
-        function ($location) {
+        '$location', '$routeParams', '$rootScope',
+        function ($location, $routeParams, $rootScope) {
             var text = [];
             return {
                 getText: function() {
@@ -62,6 +62,33 @@
                             (channel.password ? '/' + channel.password : ''),
                         text: url + (channel.password ? '/***' : '')
                     };
+                },
+                handleJoinUrl: function (user) {
+                    var channel = $routeParams.channel;
+                    var pass = $routeParams.pass || '';
+
+                    //the same function as in the ChannelCtrl
+                    function joinChannel (channel, pass, user) {
+                        //redirect from /join to /chat
+                        $location.path('/chat');
+                        socket.emit('join channel', user, {
+                            name: channel,
+                            password: pass
+                        });
+                    }
+
+                    if (!channel) {
+                        $location.path('/');
+                    } else {
+                        if (!user || !user.uuid) {
+                            //wait for user creation first
+                            $rootScope.$on('user created', function (event, user) {
+                                joinChannel(channel, pass, user);
+                            });
+                        } else {
+                            joinChannel(channel, pass, user);
+                        }
+                    }
                 }
             };
         }
@@ -96,6 +123,33 @@
                     set: function (channel) {
                         $window.localStorage.setItem('channel', JSON.stringify(channel));
                     }
+                }
+            };
+        }
+    ])
+
+    .service('Popup', [
+        '$modalStack', '$modal',
+        function ($modalStack, $modal) {
+            return {
+                show: function (title, text) {
+                    this.close();
+                    $modal.open({
+                        templateUrl: '/templates/modal.html',
+                        controller: 'PopupCtrl',
+                        size: 'sm',
+                        resolve: {
+                            title: function () {
+                                return title;
+                            },
+                            body: function () {
+                                return text;
+                            }
+                        }
+                    });
+                },
+                close: function () {
+                    $modalStack.dismissAll();
                 }
             };
         }

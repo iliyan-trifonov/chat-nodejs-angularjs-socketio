@@ -4,9 +4,7 @@
     angular.module('Chat.controllers', [])
 
     .controller('IndexCtrl', [
-        function () {
-            //...
-        }
+        function () {}
     ])
 
     .controller('ChannelCtrl', [
@@ -45,119 +43,33 @@
     ])
 
     .controller('ChatCtrl', [
-        '$scope', 'Chat', '$location', 'Storage', 'ChatSocket', '$routeParams', '$log', 'parseUrl', '$timeout',
-        function ($scope, Chat, $location, Storage, ChatSocket, $routeParams, $log, parseUrl, $timeout) {
+        '$scope', 'Chat', '$location', 'Storage', 'ChatSocket',
+        function ($scope, Chat, $location, Storage, ChatSocket) {
 
-            focusMessageInput();
-
-            var user = Storage.user.get();
             var channel = Storage.channel.get();
-
-            //TODO: put it in a directive
-            var chatContents = angular.element(
-                document.querySelector('.chat_contents')
-            );
 
             if (channel && channel.name) {
                 $scope.channel = channel.name;
                 $scope.inviteLink = Chat.getInviteLink(channel);
+                ChatSocket.channel.getUsers($scope.channel);
+                ChatSocket.channel.getMessages($scope.channel);
             }
 
+            $scope.user = Storage.user.get();
             $scope.users = [];
-
-            var copiedLinkTimeout;
-
-            $scope.copyInviteLink = function () {
-                //hide the text if still animated
-                $scope.$apply(function () {
-                    $scope.textCopied = false;
-                });
-                //show the text
-                $scope.$apply(function () {
-                    $scope.textCopied = true;
-                    $timeout.cancel(copiedLinkTimeout);
-                    copiedLinkTimeout = $timeout(function () {
-                        $scope.textCopied = false;
-                    }, 1E3);
-                });
-                return $scope.inviteLink.url;
-            };
-
-            //TODO: put it in a directive
-            function focusMessageInput () {
-                $timeout(function () {
-                    angular.element(
-                        document.querySelector('#messageinput')
-                    ).focus();
-                });
-            }
-
-            function joinChatUrl () {
-                var channel = $routeParams.channel;
-                var pass = $routeParams.pass || '';
-
-                $log.info('joining channel = "' + channel + '", pass = "' + pass + '"');
-
-                //the same function as in the ChannelCtrl
-                function joinChannel (channel, pass, user) {
-                    //redirect from /join to /chat
-                    $location.path('/chat');
-                    socket.emit('join channel', user, {
-                        name: channel,
-                        password: pass
-                    });
-                }
-
-                if (!channel) {
-                    $log.info('No valid channel specified, redirecting to /');
-                    $location.path('/');
-                } else {
-                    if (!user || !user.uuid) {
-                        $log.info('Waiting for the user to be created');
-                        $scope.$on('user created', function (event, user) {
-                            joinChannel(channel, pass, user);
-                        });
-                    } else {
-                        joinChannel(channel, pass, user);
-                    }
-                }
-            }
+            $scope.focusSendMessage = true;
 
             if (/^\/join\/.+/.test($location.path())) {
-                $log.info('ChatCtrl: join chat url detected', $location.path());
-                joinChatUrl();
-            }
-
-            $scope.sendMessage = function () {
-                if ($scope.message) {
-                    var msg = parseUrl($scope.message);
-                    $log.info('new msg', msg);
-                    socket.emit('new message', {
-                        channel: $scope.channel,
-                        user: user.username,
-                        text: msg
-                    });
-                    delete $scope.message;
-                }
-            };
-
-            $scope.messageKeyPressed = function (event) {
-                if (event.keyCode === 13 && $scope.message) {
-                    $scope.sendMessage();
-                }
-            };
-
-            //TODO: put it in a directive
-            function scrollChatText() {
-                chatContents.scrollTop(chatContents[0].scrollHeight);
+                return Chat.handleJoinUrl($scope.user);
             }
 
             $scope.leaveChannel = function () {
                 socket.emit(
                     'leave channel',
+                    //TODO: remove these params
                     {
-                        uuid: user.uuid,
-                        username: user.username
+                        uuid: $scope.user.uuid,
+                        username: $scope.user.username
                     },
                     $scope.channel
                 );
@@ -168,48 +80,24 @@
             $scope.$on('joined channel', function (event, channel) {
                 $scope.channel = channel.name;
                 $scope.inviteLink = Chat.getInviteLink(channel);
-                //the back-end sends the users list to all users in the channel:
-                //ChatSocket.channel.getUsers($scope.channel);
                 ChatSocket.channel.getMessages($scope.channel);
-                focusMessageInput();
+                $scope.focusSendMessage = true;
             });
 
             $scope.$on('channel users list', function (event, users) {
-                //TODO: check if this needs $apply()
-                $scope.$apply(function () {
-                    $scope.users = users;
-                });
+                $scope.users = users;
             });
 
             function showText () {
-                //TODO: check if $apply() is needed here
-                $scope.$apply(function () {
-                    $scope.chatText = Chat.getText();
-                    //TODO: check if $timeout() is needed here
-                    $timeout(function () {
-                        scrollChatText();
-                    });
-                });
+                $scope.chatText = Chat.getText();
             }
 
-            //TODO: directive for html adding - dom manipulation
-            //TODO: use the same body for user and channel message with
-            //TODO: one flag: message.channel = true/false
             $scope.$on('new channel message', function (event, message) {
                 showText();
             });
 
-            //TODO: directive for html adding
             $scope.$on('new message', function (event, message) {
                 showText();
-            });
-
-            //TODO: rename to left channel
-            $scope.$on('channel left', function (event, channel) {
-                Storage.channel.set({});
-                //$scope.$apply(function () {
-                    $location.path('/channel');
-                //});
             });
 
             $scope.$on('channel messages', function (event, messages) {
@@ -217,19 +105,22 @@
                 showText();
             });
 
+            $scope.$on('channel left', function (event, channel) {
+                Storage.channel.set({});
+                $location.path('/channel');
+            });
         }
     ])
 
     .controller('ProfileCtrl', [
-        '$scope', 'ChatSocket', 'Storage', '$location',
-        function ($scope, ChatSocket, Storage, $location) {
+        '$scope', 'ChatSocket', 'Storage', '$location', 'Popup',
+        function ($scope, ChatSocket, Storage, $location, Popup) {
 
             var user = Storage.user.get();
 
             $scope.username = user.username;
 
             $scope.updateUsername = function () {
-                //$log.info('updateUsername() called');
                 ChatSocket.user.update(user.uuid, $scope.username);
             };
 
@@ -237,15 +128,18 @@
                 user.username = newUsername;
                 Storage.user.set(user);
                 if (Storage.channel.get().name) {
-                    //$scope.$apply(function () {
-                        $location.path('/chat');
-                    //});
+                    $location.path('/chat');
+                } else {
+                    Popup.show(
+                        'User updated',
+                        'The username was updated successfully!'
+                    );
                 }
             });
         }
     ])
 
-    .controller('ModalInstanceCtrl', [
+    .controller('PopupCtrl', [
         '$scope', '$modalInstance', 'title', 'body',
         function ($scope, $modalInstance, title, body) {
             $scope.title = title;

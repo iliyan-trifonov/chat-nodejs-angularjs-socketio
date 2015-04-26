@@ -1,0 +1,4 @@
+<div class="col-md-2 chatusers text-center hidden-sm hidden-xs">
+    <span ng-if="users"><strong>Users:</strong></span><br/>
+    <span ng-repeat="user in users | orderBy: 'user'">{{user}}<br/></span>
+</div>

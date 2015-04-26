@@ -1,0 +1,14 @@
+<div class="input-group">
+    <input id="messageinput"
+           type="text"
+           class="form-control"
+           ng-model="message"
+           ng-disabled="!channel"
+           ng-keypress="messageKeyPressed($event)"/>
+    <span class="input-group-btn">
+        <button class="btn btn-primary"
+                ng-disabled="!channel"
+                ng-click="sendMessage()">Send
+        </button>
+    </span>
+</div>

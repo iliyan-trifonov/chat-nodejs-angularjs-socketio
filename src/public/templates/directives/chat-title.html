@@ -1,0 +1,14 @@
+<h2 ng-show="channel">
+    Channel #{{channel}}
+    <button class="btn btn-sm btn-primary"
+            ng-disabled="!channel"
+            ng-click="leaveChannel()">Leave
+    </button>
+</h2>
+
+<small ng-show="inviteLink">
+    Click on this link to copy it and give it to your friends:
+    <a href="javascript:void(0)" clip-copy="copyInviteLink()" ng-bind="inviteLink.text"></a>
+</small>
+
+<small class="text-success text-copied" ng-cloak ng-if="textCopied">Copied!</small>

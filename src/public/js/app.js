@@ -4,6 +4,7 @@
     angular.module('Chat', [
         'Chat.controllers',
         'Chat.services',
+        'Chat.directives',
         'ngRoute',
         'ngSanitize',
         'ui.bootstrap',
@@ -42,11 +43,8 @@
     }])
 
     .run([
-        '$location', '$rootScope', 'Storage', 'Chat', '$log', '$modal', '$modalStack', 'ChatSocket',
-        function ($location, $rootScope, Storage, Chat, $log, $modal, $modalStack, ChatSocket) {
-
-            $log.info('App run()');
-
+        '$location', '$rootScope', 'Storage', 'Chat', '$log', 'ChatSocket', 'Popup',
+        function ($location, $rootScope, Storage, Chat, $log, ChatSocket, Popup) {
             var user = Storage.user.get();
             var channel = Storage.channel.get();
             var disconnectedBefore = false;
@@ -74,7 +72,6 @@
             socket.on('joined channel', function (channel) {
                 $log.info('socket:joined channel', channel);
                 Storage.channel.set(channel);
-                //$location.path('/chat');
                 $rootScope.$apply(function () {
                     $rootScope.$broadcast('joined channel', channel);
                 });
@@ -92,23 +89,29 @@
 
             socket.on('channel users list', function (users) {
                 $log.info('socket:channel users list', users);
-                $rootScope.$broadcast('channel users list', users);
+                $rootScope.$apply(function () {
+                    $rootScope.$broadcast('channel users list', users);
+                });
             });
 
             //TODO: combine channel and user messages with a flag: message.channel = true/false
+
             socket.on('new channel message', function (message) {
                 $log.info('socket:new channel message'/*, message*/);
                 Chat.addText(message.text);
-                $rootScope.$broadcast('new channel message', message);
+                $rootScope.$apply(function () {
+                    $rootScope.$broadcast('new channel message', message);
+                });
             });
 
             socket.on('new message', function (message) {
                 $log.info('socket:new message'/*, message*/);
                 Chat.addText(message.text);
-                $rootScope.$broadcast('new message', message);
+                $rootScope.$apply(function () {
+                    $rootScope.$broadcast('new message', message);
+                });
             });
 
-            //TODO: rename it to left channel
             socket.on('channel left', function (channel) {
                 $log.info('socket:channel left', channel);
                 $rootScope.$apply(function () {
@@ -125,30 +128,21 @@
 
             socket.on('channel messages', function (messages) {
                 $log.info('socket:channel messages', 'len = ' + messages.length);
-                $rootScope.$broadcast('channel messages', messages);
+                $rootScope.$apply(function () {
+                    $rootScope.$broadcast('channel messages', messages);
+                });
             });
 
             socket.on('chat error', function (error) {
                 $log.error('socket:chat error', error);
-                $rootScope.$broadcast('chat error', error);
-                //
-                $modalStack.dismissAll();
-                $modal.open({
-                    templateUrl: 'myModalContent.html',
-                    controller: 'ModalInstanceCtrl',
-                    size: 'sm',
-                    resolve: {
-                        title: function () {
-                            return 'Error';
-                        },
-                        body: function () {
-                            return error.text;
-                        }
-                    }
+                $rootScope.$apply(function () {
+                    $rootScope.$broadcast('chat error', error);
                 });
+                Popup.show('Error', error.text);
             });
 
             $rootScope.isConnected = false;
+
             socket.on('connect', function () {
                 $log.info('socket:connect');
                 $rootScope.$apply(function () {
@@ -157,7 +151,7 @@
                 //reconnect to the user's channel
                 if (disconnectedBefore) {
                     disconnectedBefore = false;
-                    $modalStack.dismissAll();
+                    Popup.close();
                     var user = Storage.user.get();
                     var channel = Storage.channel.get();
                     if (channel && channel.name && user) {
@@ -168,29 +162,18 @@
                     }
                 }
             });
+
             socket.on('disconnect', function () {
-                $log.info('socket:disconnect');
+                $log.error('socket:disconnect');
                 $rootScope.$apply(function () {
                     $rootScope.isConnected = false;
                 });
                 disconnectedBefore = true;
-                $modalStack.dismissAll();
-                $modal.open({
-                    templateUrl: 'myModalContent.html',
-                    controller: 'ModalInstanceCtrl',
-                    size: 'sm',
-                    resolve: {
-                        title: function () {
-                            return 'Error';
-                        },
-                        body: function () {
-                            return 'You have been disconnected! Please refresh.';
-                        }
-                    }
-                });
+                Popup.show('Error', 'You have been disconnected! Please wait or refresh the page.');
             });
+
             socket.on('error', function (err) {
-                $log.info('socket:error', err);
+                $log.error('socket:error', err);
                 //...
             });
 
