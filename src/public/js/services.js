@@ -55,12 +55,14 @@
                         $location.host() +
                         ':' +
                         $location.port() +
-                        '/#/join/' +
-                        channel.name;
+                        '/#/join/';
                     return {
                         url: url +
-                            (channel.password ? '/' + channel.password : ''),
-                        text: url + (channel.password ? '/***' : '')
+                            encodeURIComponent(channel.name) +
+                            (channel.password ?
+                                '/' + encodeURIComponent(channel.password) :
+                                ''),
+                        text: url + channel.name + (channel.password ? '/***' : '')
                     };
                 },
                 handleJoinUrl: function (user) {
