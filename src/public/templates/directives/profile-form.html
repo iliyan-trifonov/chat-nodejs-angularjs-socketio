@@ -11,7 +11,8 @@
 </div>
 <div class="row">
     <button class="btn btn-block btn-primary"
-            ng-disabled="!username"
+            ng-init="usernameOriginal=username"
+            ng-disabled="!username || (username === usernameOriginal)"
             ng-click="updateUsername()"
             >Update</button>
 </div>
