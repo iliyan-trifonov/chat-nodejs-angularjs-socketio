@@ -58,6 +58,7 @@
                 socket.emit('create user');
             } else {
                 socket.emit('known user', user);
+                //TODO: wait known user to return success
                 if (channel && channel.name) {
                     $location.path('/chat');
                     socket.emit('join channel', user, channel);
@@ -163,6 +164,7 @@
                 }
             });
 
+            //TODO: load the modal template in advance to be able to show it for unreachable server
             socket.on('disconnect', function () {
                 $log.error('socket:disconnect');
                 $rootScope.$apply(function () {
@@ -185,6 +187,12 @@
         return text.replace( urlPattern, function ( $0, $1 ) {
             return $1 ? $0 : '<a href="' + (/http/.test($0) ? $0 : 'http://' + $0) + '" target="_blank">' + $0 + '</a>';
         });
+    })
+
+    .value('Flags', function () {
+        return {
+            joinedChannel: false
+        };
     })
 
     ;

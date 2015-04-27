@@ -43,12 +43,13 @@
     ])
 
     .controller('ChatCtrl', [
-        '$scope', 'Chat', '$location', 'Storage', 'ChatSocket',
-        function ($scope, Chat, $location, Storage, ChatSocket) {
+        '$scope', 'Chat', '$location', 'Storage', 'ChatSocket', 'Flags',
+        function ($scope, Chat, $location, Storage, ChatSocket, Flags) {
 
             var channel = Storage.channel.get();
 
-            if (channel && channel.name) {
+            //reload the data when coming from another SAP page without refresh
+            if (channel && channel.name && Flags.joinedChannel) {
                 $scope.channel = channel.name;
                 $scope.inviteLink = Chat.getInviteLink(channel);
                 ChatSocket.channel.getUsers($scope.channel);
@@ -82,6 +83,7 @@
                 $scope.inviteLink = Chat.getInviteLink(channel);
                 ChatSocket.channel.getMessages($scope.channel);
                 $scope.focusSendMessage = true;
+                Flags.joinedChannel = true;
             });
 
             $scope.$on('channel users list', function (event, users) {
@@ -107,6 +109,7 @@
 
             $scope.$on('channel left', function (event, channel) {
                 Storage.channel.set({});
+                Flags.joinedChannel = false;
                 $location.path('/channel');
             });
         }

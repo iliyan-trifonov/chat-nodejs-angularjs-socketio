@@ -245,7 +245,7 @@ function joinChannel (socket, user, channel) {
         if (err) {
             socketError(socket, {
                 type: 'join channel err',
-                text: 'Could not join channel ' + channel.name + '! Error: ' + err
+                text: 'Could not join channel "' + channel.name + '"! Error: ' + err
             });
             return false;
         }
@@ -306,15 +306,15 @@ function handleKnownUser (socket, user) {
     //socket.emit('known user ready', clients[uuid]);
 }
 
-function handleGetChannelUsersList (socket, channel) {
-    if (!channelExists(channel)) {
+function handleGetChannelUsersList (socket, channelName) {
+    if (!channelExists(channelName)) {
         socketError(socket, {
             type: 'get channel users list err',
-            text: 'Could not get channel users list! Channel doesn\'t exist!'
+            text: 'Could not get users list for "'+channelName+'"! Channel doesn\'t exist!'
         });
         return false;
     }
-    var users = getChannelUsers(channel);
+    var users = getChannelUsers(channelName);
     log.info('channel users list', { users: users });
     socket.emit('channel users list', users);
 }
