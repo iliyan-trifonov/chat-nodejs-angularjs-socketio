@@ -70,8 +70,8 @@
     ])
 
     .directive('chatMessage', [
-        'parseUrl',
-        function (parseUrl) {
+        '$filter',
+        function ($filter) {
             return {
                 restrict: 'E',
                 scope: {
@@ -84,9 +84,10 @@
                     scope.sendMessage = function () {
                         if (scope.message) {
                             socket.emit('new message', {
+                                //TODO: channel and user can be omitted in single channel mode
                                 channel: scope.channel,
                                 user: scope.username,
-                                text: parseUrl(scope.message)
+                                text: $filter('linky')(scope.message, '_blank')
                             });
                             delete scope.message;
                         }
