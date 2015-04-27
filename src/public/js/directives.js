@@ -150,5 +150,24 @@
         }
     ])
 
+    .directive('allowedChars', [
+        function () {
+            return {
+                restrict: 'A',
+                require: 'ngModel',
+                link: function (scope, element, attrs, modelCtrl) {
+                    modelCtrl.$parsers.push(function (value) {
+                        var newValue = value.replace(/[^\w\-\_\.\ ]/g, '');
+                        if (newValue !== value) {
+                            modelCtrl.$setViewValue(newValue);
+                            modelCtrl.$render();
+                        }
+                        return newValue;
+                    });
+                }
+            };
+        }
+    ])
+
     ;
 })(angular, socket);
