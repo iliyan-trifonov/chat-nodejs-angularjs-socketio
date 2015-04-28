@@ -158,7 +158,8 @@
                 require: 'ngModel',
                 link: function (scope, element, attrs, modelCtrl) {
                     modelCtrl.$parsers.push(function (value) {
-                        var newValue = value.replace(/[^\w\-\_\.\ ]/g, '');
+                        console.log('value', value);
+                        var newValue = value.replace(/[^\u00BF-\u1FFF\u2C00-\uD7FF\w\-\_\.\ ]+/g, '');
                         if (newValue !== value) {
                             modelCtrl.$setViewValue(newValue);
                             modelCtrl.$render();
