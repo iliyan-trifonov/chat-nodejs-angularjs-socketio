@@ -84,7 +84,7 @@
                     scope.sendMessage = function () {
                         if (scope.message) {
                             socket.emit('new message', {
-                                //TODO: channel and user can be omitted in single channel mode
+                                //TODO: channel and user should be omitted in single channel mode
                                 channel: scope.channel,
                                 user: scope.username,
                                 text: $filter('linky')(scope.message, '_blank')
@@ -128,7 +128,17 @@
                 },
                 templateUrl: '/templates/directives/profile-form.html',
                 link: function (scope, element) {
+                    scope.usernameOriginal = scope.username;
+
                     element.find('#username').focus();
+
+                    scope.keyPressed = function (event) {
+                        setTimeout(function () {
+                            if (event.keyCode === 13 && scope.username && scope.username !== scope.usernameOriginal) {
+                                scope.updateUsername();
+                            }
+                        });
+                    };
                 }
             };
         }
@@ -146,6 +156,16 @@
                 },
                 link: function (scope, element) {
                     element.find('#name').focus();
+
+                    //TODO: if used in much more places create a common function/directive
+                    //TODO: that receives the expression to check and the function to run:
+                    scope.keyPressed = function (event) {
+                        setTimeout(function () {
+                            if (event.keyCode === 13 && scope.channel && scope.channel.name) {
+                                scope.joinChannel();
+                            }
+                        });
+                    };
                 }
             };
         }
@@ -158,7 +178,6 @@
                 require: 'ngModel',
                 link: function (scope, element, attrs, modelCtrl) {
                     modelCtrl.$parsers.push(function (value) {
-                        console.log('value', value);
                         var newValue = value.replace(/[^\u00BF-\u1FFF\u2C00-\uD7FF\w\-\_\.\ ]+/g, '');
                         if (newValue !== value) {
                             modelCtrl.$setViewValue(newValue);

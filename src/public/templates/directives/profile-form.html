@@ -8,13 +8,13 @@
                placeholder="Username"
                maxlength="20"
                ng-model="username"
+               ng-keypress="keyPressed($event)"
                allowed-chars />
     </div>
 </div>
 <div class="row">
     <button class="btn btn-block btn-primary"
-            ng-init="usernameOriginal=username"
             ng-disabled="!username || (username === usernameOriginal)"
             ng-click="updateUsername()"
-            >Update</button>
+    >Update</button>
 </div>
