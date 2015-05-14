@@ -276,10 +276,12 @@ function handleNewMessage (message) {
 }
 
 function handleCreateUser (socket) {
-    var uuid = hat();
+    var uuid = hat();//makes the user unique
+    //TODO: check and generate/use a non-existent username only
     var user = {
         uuid: uuid,
-        username: 'Anonymous' + (Math.floor(Math.random() * 10000) + 1000),
+        //Anonymous1000-10000
+        username: 'Anonymous' + (Math.floor(Math.random() * 9000) + 1000),
         channels: [],
         socketId: socket.id
     };
