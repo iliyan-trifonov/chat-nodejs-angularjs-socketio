@@ -66,6 +66,17 @@
 </div>
 -->
 
+<script type="text/ng-template" id="/templates/modal.html">
+    <div class="modal-header">
+        <h3 class="modal-title" ng-bind="title"></h3>
+    </div>
+    <div class="modal-body" ng-bind="body">
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" ng-click="ok()">OK</button>
+    </div>
+</script>
+
 <script type="text/javascript" src="/vendor/jquery/dist/jquery.min.js"></script>
 <script type="text/javascript" src="/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="/vendor/angular/angular.min.js"></script>
