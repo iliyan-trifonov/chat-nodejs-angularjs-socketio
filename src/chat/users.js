@@ -8,6 +8,10 @@ class User {
         this.channels = [];
     }
 
+    getUuid () {
+        return this.uuid;
+    }
+
     getName () {
         return this.name;
     }
