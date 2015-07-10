@@ -3,8 +3,16 @@
 class Channel {
     constructor (channel) {
         this.name = channel.name;
-        this.password = channel.password;
+        this.password = channel.password || '';
         this.users = [];
+    }
+
+    getName () {
+        return this.name;
+    }
+
+    getPassword () {
+        return this.password;
     }
 
     addUser (uuid) {
