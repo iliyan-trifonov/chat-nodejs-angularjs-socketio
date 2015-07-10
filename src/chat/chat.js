@@ -38,14 +38,14 @@ export default class Chat {
             this.destroyUser(socket);
         });
 
-        socket.on('create channel', channel => {
-            this.log.info('socket:create channel', { channel: channel });
-            this.handleChannelCreate(socket, channel);
+        socket.on('create channel', channelReq => {
+            this.log.info('socket:create channel', { channel: channelReq });
+            this.handleChannelCreate(socket, channelReq);
         });
 
-        socket.on('join channel', (user, channel) => {
-            this.log.info('socket:join channel', { user: user, channel: channel });
-            this.handleChannelJoin(socket, user, channel);
+        socket.on('join channel', (user, channelReq) => {
+            this.log.info('socket:join channel', { user: user, channel: channelReq });
+            this.handleChannelJoin(socket, user, channelReq);
         });
 
         socket.on('leave channel', (user, channel) => {
@@ -103,24 +103,24 @@ export default class Chat {
         };
     }
 
-    addMessage (channel, text) {
-        this.log.info('addMessage()', { channelName: channel, text: text });
-        if (!this.messages[channel]) {
-            this.messages[channel] = [];
+    addMessage (channelName, text) {
+        this.log.info('addMessage()', { channelName: channelName, text: text });
+        if (!this.messages[channelName]) {
+            this.messages[channelName] = [];
         }
-        this.messages[channel].push(text);
-        if (this.messages[channel].length > this.messagesLimit) {
-            this.messages[channel].shift();
+        this.messages[channelName].push(text);
+        if (this.messages[channelName].length > this.messagesLimit) {
+            this.messages[channelName].shift();
         }
         //this.log.info('messages for ' + channel, messages[channel]);
     }
 
-    getMessages (channel) {
+    getMessages (channelName) {
         let result = [];
-        if (this.messages[channel]) {
-            result = this.messages[channel];
+        if (this.messages[channelName]) {
+            result = this.messages[channelName];
         }
-        this.log.info('getMessages('+channel+')', { channelName: channel, result: result });
+        this.log.info('getMessages('+channelName+')', { channelName: channelName, result: result });
         return result;
     }
 
@@ -192,15 +192,15 @@ export default class Chat {
         return this.users.getBySocketId(socketId);
     }
 
-    addChannel (channel) {
+    addChannel (channelReq) {
         //TODO: check when it happens to have a channel with users already populated
         this.log.info('Adding new channel', {
-            channelName: channel.name,
-            channelPassword: channel.password
+            channelName: channelReq.name,
+            channelPassword: channelReq.password
         });
         //channel.users = [];
         //this.channels[channel.name] = channel;
-        this.channels.addChannel(channel);
+        this.channels.addChannel(channelReq);
     }
 
     getUserChannels (uuid) {
@@ -265,23 +265,22 @@ export default class Chat {
         return users;
     }
 
-    handleChannelCreate (socket, channel) {
-        if (!channel) {
+    handleChannelCreate (socket, channelReq) {
+        if (!channelReq) {
             this.socketError(socket, {
                 type: 'create channel err',
                 text: 'Channel not set!'
             });
             return false;
         }
-        if (this.channelExists(channel.name)) {
+        if (this.channelExists(channelReq.name)) {
             this.socketError(socket, {
                 type: 'channel exists',
-                text: 'Channel ' + channel.name + ' already exists!'
+                text: 'Channel ' + channelReq.name + ' already exists!'
             });
             return false;
         }
         let user = this.findUserBySocketId(socket.id);
-        console.log('user from socketId', user);
         if (!user) {
             this.socketError(socket, {
                 type: 'create channel err',
@@ -295,12 +294,12 @@ export default class Chat {
                 //...
                 return false;
             }
-            this.joinChannel(socket, user, channel);
+            this.joinChannel(socket, user, channelReq);
         });
     }
 
-    handleChannelJoin (socket, user, channel) {
-        if (!user || !channel) {
+    handleChannelJoin (socket, userReq, channelReq) {
+        if (!userReq || !channelReq) {
             this.socketError(socket, {
                 type: 'join channel err',
                 text: 'User or channel not set!'
@@ -308,7 +307,7 @@ export default class Chat {
             return false;
         }
 
-        user = this.users.getUser(user.uuid);
+        let user = this.users.getUser(userReq.uuid);
 
         /*//with this the channel will not be recreated after server restart:
          if (!this.channelExists(channel.name)) {
@@ -319,15 +318,15 @@ export default class Chat {
          return false;
          }*/
 
-        let chan = this.channels.getChannel(channel.name);
+        let channel = this.channels.getChannel(channelReq.name);
 
-        if (chan && !chan.validatePass(channel.password)) {
+        if (channel && !channel.validatePass(channelReq.password)) {
         /*if (this.channels[channel.name] &&
             this.channels[channel.name].password !== channel.password
         ) {*/
             this.socketError(socket, {
                 type: 'join channel err',
-                text: 'Could not join channel ' + channel.name + '! Wrong password!'
+                text: 'Could not join channel ' + channel.getName() + '! Wrong password!'
             });
             return false;
         }
@@ -337,33 +336,37 @@ export default class Chat {
                 //...
                 return false;
             }
-            this.joinChannel(socket, user, channel);
+            this.joinChannel(socket, user, channelReq);
         });
     }
 
-    joinChannel (socket, user, channel) {
-        socket.join(channel.name, err => {
+    joinChannel (socket, user, channelReq) {
+        socket.join(channelReq.name, err => {
             if (err) {
                 this.socketError(socket, {
                     type: 'join channel err',
-                    text: 'Could not join channel "' + channel.name + '"! Error: ' + err
+                    text: 'Could not join channel "' + channelReq.name + '"! Error: ' + err
                 });
                 return false;
             }
-            if (!this.channelExists(channel.name)) {
-                this.addChannel(channel);
+            if (!this.channelExists(channelReq.name)) {
+                this.addChannel(channelReq);
             }
-            this.addUserToChannel(user.uuid, channel.name);
-            this.sendMessageToChannel(channel.name, user.getName() + ' joined');
-            socket.emit('joined channel', channel);
-            channel.users = this.getChannelUsers(channel.name);
+            let channel = this.channels.getChannel(channelReq.name);
+            this.addUserToChannel(user.getUuid(), channel.getName());
+            this.sendMessageToChannel(channel.getName(), user.getName() + ' joined');
+            socket.emit('joined channel', {
+                name: channel.getName(),
+                password: channel.getPassword()
+            });
+            let users = this.getChannelUsers(channel.getName());
             this.log.info('joined channel', {
-                chanelName: channel.name,
-                channelPassword: channel.password,
-                users: channel.users
+                chanelName: channel.getName(),
+                channelPassword: channel.getPassword(),
+                users: users
             });
             //send the new users list to all users in the channel
-            this.io.to(channel.name).emit('channel users list', channel.users);
+            this.io.to(channel.getName()).emit('channel users list', users);
         });
     }
 
@@ -383,7 +386,6 @@ export default class Chat {
             uuid: uuid,
             //Anonymous1000-10000
             username: 'Anonymous' + (Math.floor(Math.random() * 9000) + 1000),
-            channels: [],
             socketId: socket.id
         };
         this.addUser(user);
@@ -396,18 +398,17 @@ export default class Chat {
         });
     }
 
-    handleKnownUser (socket, user) {
-        if (!user || !user.uuid) {
+    handleKnownUser (socket, userReq) {
+        if (!userReq || !userReq.uuid) {
             this.socketError(socket, {
                 type: 'known user err',
                 text: 'User not set!'
             });
             return false;
         }
-        user.channels = [];
-        user.socketId = socket.id;
-        this.addUser(user);
-        this.log.info('known user added', { user: user });
+        userReq.socketId = socket.id;
+        this.addUser(userReq);
+        this.log.info('known user added', { user: userReq });
         //socket.emit('known user ready', clients[uuid]);
     }
 
@@ -424,7 +425,7 @@ export default class Chat {
         socket.emit('channel users list', users);
     }
 
-    handleLeaveChannel (socket, user, channelName) {
+    handleLeaveChannel (socket, userReq, channelName) {
         socket.leave(channelName, err => {
             if (err) {
                 this.socketError(socket, {
@@ -434,9 +435,9 @@ export default class Chat {
                 return false;
             }
 
-            user = this.users.getUser(user.uuid);
+            let user = this.users.getUser(userReq.uuid);
 
-            this.removeUserFromChannel(socket, user.uuid, channelName, err => {
+            this.removeUserFromChannel(socket, user.getUuid(), channelName, err => {
                 if (err) {
                     //...
                     return false;
@@ -464,8 +465,8 @@ export default class Chat {
         });
     }
 
-    handleGetMessages (socket, channel) {
-        let messages = this.getMessages(channel);
+    handleGetMessages (socket, channelName) {
+        let messages = this.getMessages(channelName);
         socket.emit('channel messages', messages);
     }
 }
