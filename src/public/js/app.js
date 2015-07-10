@@ -57,10 +57,12 @@
                 Storage.channel.set({});
                 socket.emit('create user');
             } else {
+                $log.info('known user', user);
                 socket.emit('known user', user);
                 //TODO: wait known user to return success
                 if (channel && channel.name) {
                     $location.path('/chat');
+                    $log.info('join channel', channel);
                     socket.emit('join channel', user, channel);
                 }
             }
