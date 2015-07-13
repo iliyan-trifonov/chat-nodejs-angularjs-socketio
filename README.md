@@ -3,16 +3,15 @@
 [![Dependency Status](https://www.versioneye.com/user/projects/553a42d21d2989bdd50000a4/badge.svg?style=flat)](https://www.versioneye.com/user/projects/553a42d21d2989bdd50000a4)
 [![Dependency Status](https://www.versioneye.com/user/projects/553a42ce1d2989f7ee0000db/badge.svg?style=flat)](https://www.versioneye.com/user/projects/553a42ce1d2989f7ee0000db)
 
-Chat application built with NodeJS, AngularJS and Socket.io
+Chat application built with NodeJS, AngularJS, Twitter Bootstrap and Socket.io. Uses ES6 syntax on the back-end.
 
 See it in action [here](https://chat.iliyan-trifonov.com "Iliyan Trifonov's Chat App").
 
 ## Installation
 
-Install the required NodeJS and Bower modules: 
+Install the required NodeJS and Bower modules (`bower install` is ran automatically): 
 
     npm install
-    bower install
 
 Copy src/config.json.dist to src/config.json and change it if needed. By default the settings in config.json will allow
 console logging.
@@ -30,6 +29,10 @@ You can also use `nodemon` while developing:
 On production use for example `forever`:
 
     forever src/app.js
+    
+Check [this repo](https://github.com/iliyan-trifonov/docker-node-nvm "Docker Node.js NVM") 
+for a [Docker](https://www.docker.com/ "Docker LXC") image/container 
+that can run Node.js applications.
 
 ## How it works
 
