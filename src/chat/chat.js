@@ -1,8 +1,8 @@
 'use strict';
 
 import hat from 'hat';
-import moment from 'moment';
 import Channels from './channels';
+import Messages from './messages';
 import Users from './users';
 
 //TODO: create an Adapter for using in-memory arrays as DB and then another one using Redis or MongoDB
@@ -16,7 +16,7 @@ export default class Chat {
 
         cnf.chat = cnf.chat || {};
 
-        this.messagesLimit = cnf.chat.messages_limit || 100;
+        let messagesLimit = cnf.chat.messages_limit || 100;
 
         this.log = logger;
 
@@ -24,7 +24,7 @@ export default class Chat {
 
         this.channels = new Channels();
         this.users = new Users();
-        this.messages = {};
+        this.messages = new Messages(messagesLimit);
 
         this.io.on('connection', socket => {
             this.log.info('socket:connection', { socketId: socket.id });
@@ -88,38 +88,40 @@ export default class Chat {
         });
     }
 
-    formatMessage (username, text) {
+    /*formatMessage (username, text) {
         return {
             //TODO: put the date format in config
             text: moment().format('D MMM HH:mm:ss') +
             ' <strong>'+username+'</strong>: ' + text
         };
-    }
+    }*/
 
-    formatChannelMessage (text) {
+    /*formatChannelMessage (text) {
         return {
             //TODO: put the date format in config
             text: moment().format('D MMM HH:mm:ss') + ' ' + text
         };
-    }
+    }*/
 
-    addMessage (channelName, text) {
-        this.log.info('addMessage()', { channelName: channelName, text: text });
-        if (!this.messages[channelName]) {
+    addMessage (channelName, text, username) {
+        this.log.info('addMessage()', { channelName: channelName, text: text, username: username });
+        /*if (!this.messages[channelName]) {
             this.messages[channelName] = [];
         }
         this.messages[channelName].push(text);
         if (this.messages[channelName].length > this.messagesLimit) {
             this.messages[channelName].shift();
-        }
+        }*/
+        return this.messages.addMessage(channelName, text, username);
         //this.log.info('messages for ' + channel, messages[channel]);
     }
 
     getMessages (channelName) {
         let result = [];
-        if (this.messages[channelName]) {
+        /*if (this.messages[channelName]) {
             result = this.messages[channelName];
-        }
+        }*/
+        result = this.messages.getMessages(channelName);
         this.log.info('getMessages('+channelName+')', { channelName: channelName, result: result });
         return result;
     }
@@ -209,13 +211,14 @@ export default class Chat {
     }
 
     sendMessageToChannel (channelName, text) {
-        let message = this.formatChannelMessage(text);
-        this.log.info('sending message', { channelName: channelName, text: message });
+        //let message = this.formatChannelMessage(text);
+        let message = this.messages.addMessage(channelName, text);
+        this.log.info('sending message', { channelName: channelName, text: message.getMessage() });
         this.io.to(channelName).emit(
             'new channel message',
-            message
+            message.getMessage()
         );
-        this.addMessage(channelName, message.text);
+        //this.addMessage(channelName, message.text);
     }
 
     channelExists (channelName) {
@@ -371,11 +374,11 @@ export default class Chat {
     }
 
     handleNewMessage (message) {
-        let text = this.formatMessage(message.user, message.text);
-        this.addMessage(message.channel, text.text);
+        //let text = this.formatMessage(message.user, message.text);
+        let m = this.addMessage(message.channel, message.text, message.user);
         this.io.to(message.channel).emit(
             'new message',
-            text
+            m.getMessage()
         );
     }
 

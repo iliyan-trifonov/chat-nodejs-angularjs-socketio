@@ -101,7 +101,7 @@
 
             socket.on('new channel message', function (message) {
                 $log.info('socket:new channel message'/*, message*/);
-                Chat.addText(message.text);
+                Chat.addText(message);
                 $rootScope.$apply(function () {
                     $rootScope.$broadcast('new channel message', message);
                 });
@@ -109,7 +109,7 @@
 
             socket.on('new message', function (message) {
                 $log.info('socket:new message'/*, message*/);
-                Chat.addText(message.text);
+                Chat.addText(message);
                 $rootScope.$apply(function () {
                     $rootScope.$broadcast('new message', message);
                 });
