@@ -48,7 +48,7 @@
 
             var channel = Storage.channel.get();
 
-            //reload the data when coming from another SAP page without refresh
+            //reload the data when coming from another SPA page without refresh
             if (channel && channel.name && Flags.joinedChannel) {
                 $scope.channel = channel.name;
                 $scope.inviteLink = Chat.getInviteLink(channel);
