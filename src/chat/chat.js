@@ -50,7 +50,7 @@ export default class Chat {
 
         socket.on('leave channel', (user, channel) => {
             this.log.info('socket:leave channel', {user: user, channel: channel});
-            this.handleLeaveChannel(socket, user, channel);
+            this.handleChannelLeave(socket, user, channel);
         });
 
         socket.on('new message', message => {
@@ -173,16 +173,35 @@ export default class Chat {
 
     destroyUser (socket) {
         if (!socket.id) {
+            this.log.error(
+                'destroyUser: socket.id is invalid!',
+                { socketId: socket.id }
+            );
             return false;
         }
+
         let user = this.findUserBySocketId(socket.id);
         if (!user || !user.uuid) {
+            this.log.error(
+                'destroyUser: user not found by socket.id!',
+                {
+                    socketId: socket.id,
+                    user: user ? user.uuid : null
+                }
+            );
             return false;
         }
 
         this.removeUserFromAllChannels(socket, user, err => {
             if (err) {
-                //...
+                this.log.error(
+                    'destroyUser: removeUserFromAllChannels() error!',
+                    {
+                        socketId: socket.id,
+                        user: user ? user.uuid : null,
+                        error: err
+                    }
+                );
                 return false;
             }
             this.removeUser(user);
@@ -238,6 +257,7 @@ export default class Chat {
         if (counter === 0) {
             return done();
         }
+
         channels.forEach(channel => {
             this.removeUserFromChannel(socket, user.uuid, channel, err => {
                 if (err) {
@@ -428,7 +448,7 @@ export default class Chat {
         socket.emit('channel users list', users);
     }
 
-    handleLeaveChannel (socket, userReq, channelName) {
+    handleChannelLeave (socket, userReq, channelName) {
         socket.leave(channelName, err => {
             if (err) {
                 this.socketError(socket, {
@@ -442,7 +462,15 @@ export default class Chat {
 
             this.removeUserFromChannel(socket, user.getUuid(), channelName, err => {
                 if (err) {
-                    //...
+                    this.log.error(
+                        'handleChannelLeave() removeUserFromChannel error',
+                        {
+                            socketID: socket.id,
+                            uuid: user.getUuid(),
+                            channelName: channelName,
+                            error: err
+                        }
+                    );
                     return false;
                 }
                 socket.emit('channel left', channelName);
