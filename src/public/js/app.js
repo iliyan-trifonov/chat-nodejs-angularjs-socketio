@@ -52,25 +52,63 @@
             //TODO: use MenuCtrl surrounding the top menu only, no rootScope
             $rootScope.Storage = Storage;
 
-            if (!user || !user.uuid) {
-                Storage.user.set({});
-                Storage.channel.set({});
-                socket.emit('create user');
-            } else {
-                $log.info('known user', user);
-                socket.emit('known user', user);
-                //TODO: wait known user to return success
-                if (channel && channel.name) {
-                    $location.path('/chat');
-                    $log.info('join channel', channel);
-                    socket.emit('join channel', user, channel);
-                }
-            }
+            $rootScope.isConnected = false;
 
             ///socket messages
 
             //TODO: socket connect error messages to handle
             //TODO: move the socket init to a service or a main Ctrl
+
+            socket.on('connect', function () {
+                $log.info('socket:connect');
+
+                $rootScope.$apply(function () {
+                    $rootScope.isConnected = true;
+                });
+
+                if (disconnectedBefore) {
+                    //reconnect to the user's channel
+                    disconnectedBefore = false;
+                    Popup.close();
+                    var usr = Storage.user.get();
+                    var chan = Storage.channel.get();
+                    if (chan && chan.name && usr) {
+                        $log.info('reconnecting after disconnect');
+                        $location.path('/chat');
+                        ChatSocket.user.known(usr);
+                        ChatSocket.channel.join(usr, chan);
+                    }
+                } else {
+                    //first load
+                    if (!user || !user.uuid) {
+                        Storage.user.set({});
+                        Storage.channel.set({});
+                        socket.emit('create user');
+                    } else {
+                        socket.emit('known user', user);
+                        $log.info('called:known user', user);
+                        //TODO: wait known user to return success
+                        if (channel && channel.name) {
+                            $rootScope.$apply(function () {
+                                $location.path('/chat');
+                            });
+                            socket.emit('join channel', user, channel);
+                            $log.info('called:join channel', channel);
+                        }
+                    }
+                }
+
+                //TODO: load the modal template in advance to be able to show it for unreachable server
+                socket.on('disconnect', function () {
+                    $log.error('socket:disconnect');
+                    $rootScope.$apply(function () {
+                        $rootScope.isConnected = false;
+                    });
+                    disconnectedBefore = true;
+                    Popup.show('Error', 'You have been disconnected! Please wait or refresh the page.');
+                });
+
+            });
 
             socket.on('joined channel', function (channel) {
                 $log.info('socket:joined channel', channel);
@@ -142,38 +180,6 @@
                     $rootScope.$broadcast('chat error', error);
                 });
                 Popup.show('Error', error.text);
-            });
-
-            $rootScope.isConnected = false;
-
-            socket.on('connect', function () {
-                $log.info('socket:connect');
-                $rootScope.$apply(function () {
-                    $rootScope.isConnected = true;
-                });
-                //reconnect to the user's channel
-                if (disconnectedBefore) {
-                    disconnectedBefore = false;
-                    Popup.close();
-                    var user = Storage.user.get();
-                    var channel = Storage.channel.get();
-                    if (channel && channel.name && user) {
-                        $log.info('reconnecting after disconnect');
-                        $location.path('/chat');
-                        ChatSocket.user.known(user);
-                        ChatSocket.channel.join(user, channel);
-                    }
-                }
-            });
-
-            //TODO: load the modal template in advance to be able to show it for unreachable server
-            socket.on('disconnect', function () {
-                $log.error('socket:disconnect');
-                $rootScope.$apply(function () {
-                    $rootScope.isConnected = false;
-                });
-                disconnectedBefore = true;
-                Popup.show('Error', 'You have been disconnected! Please wait or refresh the page.');
             });
 
             socket.on('error', function (err) {
