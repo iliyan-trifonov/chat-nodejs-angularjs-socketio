@@ -433,6 +433,11 @@ export default class Chat {
         this.addUser(userReq);
         this.log.info('known user added', { user: userReq });
         //socket.emit('known user ready', clients[uuid]);
+        socket.emit('known user ready', {
+            uuid: userReq.uuid,
+            //username: this.clients[uuid].username
+            username: this.users.getUser(userReq.uuid).getName()
+        });
     }
 
     handleGetChannelUsersList (socket, channelName) {
