@@ -28,7 +28,7 @@ class User {
 
     removeChannel (name) {
         let index = this.channels.indexOf(name);
-        if (index) {
+        if (index !== -1) {
             this.channels.splice(index, 1);
         }
     }
