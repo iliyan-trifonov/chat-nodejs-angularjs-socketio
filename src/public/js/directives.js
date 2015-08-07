@@ -156,13 +156,16 @@
                 },
                 link: function (scope, element) {
                     element.find('#name').focus();
+                    var joinBtn = element.find('.btn-success');
 
                     //TODO: if used in much more places create a common function/directive
                     //TODO: that receives the expression to check and the function to run:
                     scope.keyPressed = function (event) {
                         setTimeout(function () {
                             if (event.keyCode === 13 && scope.channel && scope.channel.name) {
-                                scope.joinChannel();
+                                //scope.joinChannel();
+                                //trigger a digest:
+                                joinBtn.click();
                             }
                         });
                     };
