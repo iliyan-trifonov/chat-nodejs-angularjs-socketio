@@ -1,5 +1,6 @@
 {
-  "name": "Chat application built with NodeJS, AngularJS and Socket.io",
+  "name": "chat-app",
+  "description": "Chat application built with NodeJS, AngularJS and Socket.io",
   "private": true,
   "ignore": [
     "**/.*",
