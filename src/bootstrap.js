@@ -16,7 +16,7 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/public/index.html');
 });
 
-http.listen(3000, () => console.info('Chat App listening on *:3000'));
+http.listen(3002, '127.0.0.1', () => console.info('Chat App listening on 127.0.0.1:3000'));
 
 config.logger = config.logger || {};
 
